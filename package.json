@@ -1,0 +1,58 @@
+{
+  "name": "rc-image-editor",
+  "version": "0.0.0-rc.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack-dev-server --inline --progress --config ./build/webpack.dev.conf.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangmengHB/rc-image-editor.git"
+  },
+  "author": "Meng Wang <wangmeng_hb@163.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wangmengHB/rc-image-editor/issues"
+  },
+  "homepage": "https://github.com/wangmengHB/rc-image-editor#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/jest": "^24.0.15",
+    "@types/node": "^12.6.8",
+    "@types/react": "^16.8.23",
+    "@types/react-dom": "^16.8.5",
+    "@types/webpack": "^4.32.1",
+    "antd": "^3.25.3",
+    "babel-loader": "^8.0.6",
+    "css-loader": "^3.1.0",
+    "file-loader": "^4.2.0",
+    "html-webpack-plugin": "^3.2.0",
+    "less": "^3.9.0",
+    "less-loader": "^5.0.0",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "style-loader": "^0.23.1",
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.3",
+    "url-loader": "^2.2.0",
+    "webpack": "^4.38.0",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2",
+    "webpack-merge": "^4.2.1"
+  },
+  "dependencies": {
+    "antd": "^3.25.3",
+    "fabric": "^3.5.1",
+    "gl-image": "^0.0.1-rc.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "util-kit": "^0.0.0-rc.10",
+    "web-util-kit": "^0.0.0-rc.2"
+  }
+}
