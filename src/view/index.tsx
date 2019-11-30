@@ -30,7 +30,7 @@ export default class ImageEditorView extends React.Component {
 
     return (
       <div className={styles['image-editor']}>
-        <Header/>
+        <Header layerController={layerController}/>
         <div className={styles['main']}>
           <ImageLayerList className={styles['image-list']} />
           <ToolPanel className={styles['tool-panel']} />

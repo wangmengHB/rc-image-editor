@@ -23,7 +23,7 @@ export default class CanvasSpace extends React.Component<CanvasSpaceProps> {
     if (!node) {
       throw new Error('failed to get canvas element!');
     }
-    const fCanvas = new fabric.Canvas(node, {isDrawingMode: true, preserveObjectStacking: true});
+    const fCanvas = new fabric.Canvas(node, {preserveObjectStacking: true});
 
     layerController.init(fCanvas);
   }
