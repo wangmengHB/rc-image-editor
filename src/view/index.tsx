@@ -19,8 +19,7 @@ const styles = require('./index.module.less');
 export default class ImageEditorView extends React.Component {
 
   state = {
-    layerController: new LayerController(),
-
+    layerController: new LayerController(this),
   }
 
 
@@ -32,14 +31,18 @@ export default class ImageEditorView extends React.Component {
       <div className={styles['image-editor']}>
         <Header layerController={layerController}/>
         <div className={styles['main']}>
-          <ImageLayerList className={styles['image-list']} />
-          <ToolPanel className={styles['tool-panel']} />
+          <ImageLayerList 
+            className={styles['image-list']}
+            layerController={layerController} 
+          />
+          <ToolPanel 
+            className={styles['tool-panel']} 
+          />
 
           <WorkCanvas 
             className={styles['work-canvas']} 
             layerController={layerController}
           />
-
 
         </div>
 
