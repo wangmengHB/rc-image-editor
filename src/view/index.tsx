@@ -5,6 +5,11 @@ import ImageLayerList from './image-layer-list';
 import ToolPanel from './tool-panel';
 import WorkCanvas from './work-canvas';
 
+
+import LayerController from '../controller/LayerController';
+
+
+
 const styles = require('./index.module.less');
 
 
@@ -13,9 +18,15 @@ const styles = require('./index.module.less');
 
 export default class ImageEditorView extends React.Component {
 
+  state = {
+    layerController: new LayerController(),
+
+  }
 
 
   render() {
+    const { layerController } = this.state;
+
 
     return (
       <div className={styles['image-editor']}>
@@ -24,7 +35,10 @@ export default class ImageEditorView extends React.Component {
           <ImageLayerList className={styles['image-list']} />
           <ToolPanel className={styles['tool-panel']} />
 
-          <WorkCanvas className={styles['work-canvas']} />
+          <WorkCanvas 
+            className={styles['work-canvas']} 
+            layerController={layerController}
+          />
 
 
         </div>

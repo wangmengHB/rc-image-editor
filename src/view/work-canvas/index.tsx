@@ -10,20 +10,22 @@ const styles = require('./index.module.less');
 export interface CanvasSpaceProps{
   className?: string;
   style?: React.CSSProperties;
+  layerController: any;
 }
 
 export default class CanvasSpace extends React.Component<CanvasSpaceProps> {
 
 
   componentDidMount() {
+    const { layerController } = this.props;
+
     const node = this.refs.mainCanvas;
     if (!node) {
       throw new Error('failed to get canvas element!');
     }
-    (window as any)._c = new fabric.Canvas(node, {isDrawingMode: true, preserveObjectStacking: true});
+    const fCanvas = new fabric.Canvas(node, {isDrawingMode: true, preserveObjectStacking: true});
 
-
-
+    layerController.init(fCanvas);
   }
 
   render() {
