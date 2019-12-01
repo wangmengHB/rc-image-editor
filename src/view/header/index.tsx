@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Icon } from 'antd';
+import { Button, Icon, Modal } from 'antd';
 
 
 const styles = require('./index.module.less');
@@ -15,7 +15,12 @@ export default class Header extends React.Component<HeaderProps> {
 
   exportImage = () => {
     const { layerController } = this.props;
-    window.open(layerController.fCanvas.toDataURL('image/png'));
+    const base64 = layerController.fCanvas.toDataURL();
+    Modal.confirm({
+      title: '预览',
+      width: 600,
+      content: (<img style={{maxWidth: 500}} src={base64}/>)
+    })
   }
 
 
@@ -49,9 +54,9 @@ export default class Header extends React.Component<HeaderProps> {
     return (
       <div className={styles.header}>
         
-        <Button type="primary" onClick={this.openFileDialog}>加载本地图片</Button>
+        <Button className={styles['btn']} type="primary" onClick={this.openFileDialog}>加载本地图片</Button>
         <input ref="file" className={styles.file} type="file" accept="image" onChange={this.loadImage}/>
-        <Button type="primary" onClick={this.exportImage}>下载合成图片</Button>
+        <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成图片</Button>
 
       </div>
     )
