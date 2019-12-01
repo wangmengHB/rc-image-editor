@@ -10,6 +10,12 @@ export enum Direction {
   Down = 'down',
 }
 
+export enum CanvasEditMode {
+  Pan = 'pan',
+  Filter = 'filter',
+  Crop = 'crop',
+  Pencil = 'pencil',
+}
 
 
 

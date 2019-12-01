@@ -31,10 +31,17 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
     this.forceUpdate();
   }
 
+  setActive = (item) => {
+    const { layerController } = this.props;
+    layerController.setActiveObject(item);
+  }
 
   renderItem = (item) => {
-    const base64 = item.getElement().src;
-    const name = item.name;  
+    const { layerController } = this.props;
+    const ele = item.getElement();
+    
+    const name = item.name; 
+    const isActive = item === layerController.getActiveObject(); 
     return (
       <div className={styles['item']} key={`thunb-${item.name}`}>
         <div className={styles['name']}>
@@ -43,7 +50,19 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
           <a onClick={() => this.move(item, Direction.Down)}><Icon type="down" /></a>
           <a onClick={() => this.delete(item)}><Icon type="delete" /></a>
         </div>
-        <img className={styles['thunbnail']} src={base64}/>
+        <div 
+          className={classnames({[styles['thunb-container']]: true, [styles['active']]: isActive})}
+          onClick={() => this.setActive(item)}
+          ref={(node) => {
+            if (node) {
+              for (let i = node.children.length - 1; i >= 0; i--) {
+                const child = node.children[i];
+                node.removeChild(child);
+              }
+              (node as HTMLElement).appendChild(ele)
+            }
+          }}
+        />
       </div>
     );
   }

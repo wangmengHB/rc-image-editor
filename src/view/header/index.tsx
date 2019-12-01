@@ -11,21 +11,13 @@ export interface HeaderProps{
 }
 
 
-function loadImage(src) {
-  var image = new Image();
-  image.onload = function() {
-      
-  };
-  image.src = src;
-}
-
-function func2(e:any) {
-  
-}
-
-
-
 export default class Header extends React.Component<HeaderProps> {
+
+  exportImage = () => {
+    const { layerController } = this.props;
+    window.open(layerController.fCanvas.toDataURL('image/png'));
+  }
+
 
   loadImage = e => {
     const { layerController } = this.props;
@@ -45,8 +37,7 @@ export default class Header extends React.Component<HeaderProps> {
       image.src = base64;
     };
     reader.readAsDataURL(e.target.files[0]);
-    (window as any).fi = this.refs.file;
-    
+    (window as any).fi = this.refs.file; 
   }
 
   openFileDialog = () => {
@@ -60,6 +51,7 @@ export default class Header extends React.Component<HeaderProps> {
         
         <Button type="primary" onClick={this.openFileDialog}>加载本地图片</Button>
         <input ref="file" className={styles.file} type="file" accept="image" onChange={this.loadImage}/>
+        <Button type="primary" onClick={this.exportImage}>下载合成图片</Button>
 
       </div>
     )

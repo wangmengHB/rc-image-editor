@@ -27,7 +27,17 @@ export default class CanvasSpace extends React.Component<CanvasSpaceProps> {
     const fCanvas = new fabric.Canvas(node, {preserveObjectStacking: true});
     fCanvas.setWidth(CANVAS_INIT_WIDTH);
     fCanvas.setHeight(CANVAS_INIT_HEIGHT);
+    let webglBackend = new fabric.WebglFilterBackend();
+    fabric.filterBackend = fabric.initFilterBackend();
+    fabric.filterBackend = webglBackend;
+    fabric.Object.prototype.transparentCorners = false;
+    fabric.Object.prototype.padding = 5;
+
+
+    console.log(Object.keys(fabric.Image.filters));
+
     (window as any)._c = fCanvas;
+    (window as any)._fabric = fabric;
 
     layerController.init(fCanvas);
   }

@@ -36,7 +36,8 @@ export default class ImageEditorView extends React.Component {
             layerController={layerController} 
           />
           <ToolPanel 
-            className={styles['tool-panel']} 
+            className={styles['tool-panel']}
+            layerController={layerController} 
           />
 
           <WorkCanvas 
