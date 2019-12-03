@@ -1,5 +1,9 @@
 import * as React from 'react';
-import { Button, Icon, Modal } from 'antd';
+import { Button, Icon, Modal, Slider } from 'antd';
+
+const PERCENT = 100;
+const MIN = 0.1;
+const MAX = 4;
 
 
 const styles = require('./index.module.less');
@@ -9,7 +13,6 @@ export interface HeaderProps{
   style?: React.CSSProperties;
   layerController: any;
 }
-
 
 export default class Header extends React.Component<HeaderProps> {
 
@@ -49,14 +52,44 @@ export default class Header extends React.Component<HeaderProps> {
     (this.refs.file as any).click();
   }
 
+  changeZoom = (val) => {
+    const { layerController } = this.props;
+    const fCanvas = layerController.fCanvas;
+    const width = fCanvas.getWidth();
+    const height = fCanvas.getHeight();
+    fCanvas.zoomToPoint({x: width/2, y: height/2}, val);
+    this.forceUpdate();
+  }
+
 
   render() {
+    
+    const { layerController } = this.props;
+    let zoom = layerController.getZoom();
+    if (typeof zoom !== 'number') {
+      zoom = 1;
+    } 
+
+
     return (
       <div className={styles.header}>
         
         <Button className={styles['btn']} type="primary" onClick={this.openFileDialog}>加载本地图片</Button>
         <input ref="file" className={styles.file} type="file" accept="image" onChange={this.loadImage}/>
         <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成图片</Button>
+
+        <div className={styles['control']}>
+          <span className={styles['label']}>画布缩放：</span>
+          <Slider
+            className={styles['slider']}
+            min={MIN * PERCENT}
+            max={MAX * PERCENT}
+            onChange={(val:any) => this.changeZoom(val/PERCENT)}
+            value={zoom * PERCENT}
+            style={{ }}
+          />
+          <span className={styles['value']}>{`${parseInt(zoom * PERCENT as any)} %`}</span>
+        </div>
 
       </div>
     )

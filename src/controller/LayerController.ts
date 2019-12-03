@@ -49,8 +49,7 @@ export default class LayerController {
     
     oImg.applyFilters();
 
-    (window as any)._f1 = brightnessFilter;
-
+    
     this.imgObjList.push(oImg);
     oImg.on('selected', () => {
       console.log('image selected');
@@ -61,11 +60,21 @@ export default class LayerController {
     const max_width = Math.max(...this.imgObjList.map((item: any) => item.width));
     const max_height = Math.max(...this.imgObjList.map((item: any) => item.height));
 
-    this.fCanvas.setWidth(max_width);
-    this.fCanvas.setHeight(max_height);
+    // this.fCanvas.setWidth(max_width);
+    // this.fCanvas.setHeight(max_height);
+
+    this.fCanvas.setDimensions({
+      width: max_width,
+      height: max_height,
+    });
+
+    
 
     this.fCanvas.add(oImg);
     (this.cmp).forceUpdate();
+
+    
+    this.fCanvas.renderAll();
 
     
 
@@ -87,7 +96,6 @@ export default class LayerController {
       return;
     }
     this.fCanvas.remove(item);
-
   }
 
   getActiveObject() {
@@ -110,6 +118,13 @@ export default class LayerController {
     this.editMode = mode;
     // todo: sth
     this.cmp.forceUpdate();
+  }
+
+  getZoom() {
+    if (!this.fCanvas) {
+      return;
+    }
+    return this.fCanvas.getZoom();
   }
 
   update() {
