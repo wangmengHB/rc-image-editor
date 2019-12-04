@@ -3,7 +3,7 @@ import { Button, Icon, Modal, Slider } from 'antd';
 
 const PERCENT = 100;
 const MIN = 0.1;
-const MAX = 4;
+const MAX = 1;
 
 
 const styles = require('./index.module.less');
@@ -22,7 +22,7 @@ export default class Header extends React.Component<HeaderProps> {
     Modal.confirm({
       title: '预览',
       width: 600,
-      content: (<img style={{maxWidth: 500}} src={base64}/>)
+      content: (<img style={{maxWidth: 500, border: '1px solid red'}} src={base64}/>)
     })
   }
 
@@ -54,10 +54,7 @@ export default class Header extends React.Component<HeaderProps> {
 
   changeZoom = (val) => {
     const { layerController } = this.props;
-    const fCanvas = layerController.fCanvas;
-    const width = fCanvas.getWidth();
-    const height = fCanvas.getHeight();
-    fCanvas.zoomToPoint({x: width/2, y: height/2}, val);
+    layerController.setScale(val);
     this.forceUpdate();
   }
 
@@ -65,7 +62,7 @@ export default class Header extends React.Component<HeaderProps> {
   render() {
     
     const { layerController } = this.props;
-    let zoom = layerController.getZoom();
+    let zoom = layerController.scale;
     if (typeof zoom !== 'number') {
       zoom = 1;
     } 
@@ -86,7 +83,6 @@ export default class Header extends React.Component<HeaderProps> {
             max={MAX * PERCENT}
             onChange={(val:any) => this.changeZoom(val/PERCENT)}
             value={zoom * PERCENT}
-            style={{ }}
           />
           <span className={styles['value']}>{`${parseInt(zoom * PERCENT as any)} %`}</span>
         </div>

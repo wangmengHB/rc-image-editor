@@ -1,18 +1,18 @@
 
 @-tool-panel-width: 100px;
+@-image-layer-width: 200px;
 
 .image-editor {
-  min-width: 600px;
-  min-height: 600px;
+  min-width: 900px;
+  min-height: 550px;
   border: solid 1px rgba(0, 0, 0, 0.1);
 
 
   .main{
     position: relative;
     width: 100%;
-    height: 550px;
+    height: 500px;
   }
-
 
   .image-list{
     position: absolute;
@@ -20,6 +20,7 @@
     right: 0;
     bottom: 0;
     z-index: 3;
+    width: @-image-layer-width;
   }
 
   .tool-panel{
@@ -34,8 +35,7 @@
     position: absolute;
     left: @-tool-panel-width;
     top: 0;
-
-
+    width: calc(100% - 300px);
   }
 
   
