@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Button, Icon, Modal, Slider } from 'antd';
+import { Button, Icon, Modal, Slider, InputNumber } from 'antd';
+import { MAX_CANVAS_PIXEL_SIZE, MIN_CANVAS_PIXEL_SIZE } from '../../const';
 
 const PERCENT = 100;
 const MIN = 0.1;
@@ -58,16 +59,19 @@ export default class Header extends React.Component<HeaderProps> {
     this.forceUpdate();
   }
 
+  changeDimension = (type, val) => {
+    const { layerController } = this.props;
+    layerController.changeDimension(type, val);
+  }
 
-  render() {
-    
+  render() {    
     const { layerController } = this.props;
     let zoom = layerController.scale;
     if (typeof zoom !== 'number') {
       zoom = 1;
-    } 
-
-
+    }
+    const [width, height] = layerController.getSize();
+    
     return (
       <div className={styles.header}>
         
@@ -76,7 +80,26 @@ export default class Header extends React.Component<HeaderProps> {
         <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成图片</Button>
 
         <div className={styles['control']}>
-          <span className={styles['label']}>画布缩放：</span>
+          <div className={styles['label']}>画布宽度:</div>
+          <InputNumber 
+            className={styles['value']}
+            step={1}
+            min={MIN_CANVAS_PIXEL_SIZE}
+            max={MAX_CANVAS_PIXEL_SIZE}
+            value={width}
+            onChange={val => this.changeDimension('width', val)}
+          />
+          <div className={styles['label']}>画布高度:</div>
+          <InputNumber 
+            className={styles['value']}
+            step={1}
+            min={MIN_CANVAS_PIXEL_SIZE}
+            max={MAX_CANVAS_PIXEL_SIZE}
+            value={height}
+            onChange={val => this.changeDimension('height', val)}
+          />
+
+          <div className={styles['label']}>画布缩放:</div>
           <Slider
             className={styles['slider']}
             min={MIN * PERCENT}
@@ -84,7 +107,7 @@ export default class Header extends React.Component<HeaderProps> {
             onChange={(val:any) => this.changeZoom(val/PERCENT)}
             value={zoom * PERCENT}
           />
-          <span className={styles['value']}>{`${parseInt(zoom * PERCENT as any)} %`}</span>
+          <div className={styles['percent']}>{`${parseInt(zoom * PERCENT as any)} %`}</div>
         </div>
 
       </div>

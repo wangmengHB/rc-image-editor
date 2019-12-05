@@ -44,6 +44,9 @@ export default class LayerController {
       console.log('image selected');
       this.cmp.forceUpdate();
     });
+    oImg.on('mousemove', () => {
+      this.cmp.forceUpdate();
+    });
     (window as any)._o = oImg;
     this.fCanvas.add(oImg);
     this._fitSize()
@@ -127,12 +130,33 @@ export default class LayerController {
     this.cmp.forceUpdate();
   }
 
+  getSize() {
+    if (!this.fCanvas) {
+      return [0, 0];
+    }
+    const width = this.fCanvas.getWidth();
+    const height = this.fCanvas.getHeight();
+    return [width, height];
+  }
+
   getZoom() {
     if (!this.fCanvas) {
       return;
     }
     return this.fCanvas.getZoom();
   }
+
+  changeDimension(type, val) {
+    if (!this.fCanvas) {
+      return;
+    }
+
+    this.fCanvas.setDimensions({[type]: val});
+    this.setScale(this.scale);
+    this.update();
+
+  }
+
 
   update() {
     if (!this.fCanvas) {
