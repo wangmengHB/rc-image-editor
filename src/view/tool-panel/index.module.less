@@ -1,5 +1,16 @@
 
 
+.tool-panel() {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  bottom: 0;
+  width: 200px;
+  z-index: 2;
+  background: #fff;
+  padding: 20px 10px;
+}
+
 .tool-panel{
   min-width: 80px;
   height: 100%;
@@ -15,20 +26,13 @@
 
   .active {
     color: red;
-
   }
 
-  .tool-filter{
-    position: absolute;
-    left: 100%;
-    top: 0;
-    bottom: 0;
-    width: 200px;
-    z-index: 2;
-    background: #fff;
+  .filter-panel{
+    .tool-panel();
 
     .filterItem{
-      padding: 10px;
+      margin-top: 20px;
       .label {
         padding: 0 8px;
         line-height: 30px;
@@ -36,8 +40,17 @@
           float: right;
         }    
       }
+
+      .slider{
+        margin: 10px 0;
+      }
   
     }
+
+  }
+
+  .cropper-panel{
+    .tool-panel();
 
   }
 

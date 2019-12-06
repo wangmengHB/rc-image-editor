@@ -5,7 +5,7 @@ export const CANVAS_MAX_HEIGHT = 500;
 export const CANVAS_INIT_WIDTH = 600;
 export const CANVAS_INIT_HEIGHT = 600;
 
-export const CANVAS_PADDING = 6;
+export const CANVAS_PADDING = 10;
 
 
 export const MIN_SCALE = 0.0001;

@@ -88,7 +88,8 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
           <span className={styles['label']}>x:</span>
           <InputNumber 
             className={styles['value']}
-            disabled={!isActive}  
+            disabled={!isActive}
+            precision={1}  
             value={left}
             min={MIN_POS_VAL}
             max={MAX_POS_VAL}
@@ -102,6 +103,7 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
             className={styles['value']} 
             disabled={!isActive} 
             value={top}
+            precision={1}
             min={MIN_POS_VAL}
             max={MAX_POS_VAL}
             step={1}
@@ -113,6 +115,7 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
           <InputNumber 
             className={styles['value']} 
             disabled={!isActive} 
+            precision={1}
             value={width}
             min={MIN_POS_VAL}
             max={MAX_POS_VAL}
@@ -124,7 +127,8 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
           <span className={styles['label']}>高:</span>
           <InputNumber 
             className={styles['value']} 
-            disabled={!isActive} 
+            disabled={!isActive}
+            precision={1} 
             value={height}
             min={MIN_POS_VAL}
             max={MAX_POS_VAL}
@@ -148,7 +152,7 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
           <span className={styles['label']}>缩放y:</span>
           <InputNumber 
             className={styles['value']} 
-            disabled={!isActive} 
+            disabled={!isActive}
             value={scaleY}
             min={0.1}
             step={0.1}
@@ -177,7 +181,6 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
 
     console.log('rendered');
     
-
     return (
       <div className={classnames([styles['image-layer-list'], className])} style={style}>
         <div className={styles['title']}>图层列表</div>

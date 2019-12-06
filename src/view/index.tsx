@@ -17,8 +17,6 @@ export interface ImageEditorProps{
 
 
 
-
-
 export default class ImageEditorView extends React.Component<ImageEditorProps> {
 
   state = {
@@ -29,7 +27,6 @@ export default class ImageEditorView extends React.Component<ImageEditorProps> {
   render() {
     const { className, style } = this.props;
     const { layerController } = this.state;
-
 
     return (
       <div className={classnames([styles['image-editor'], className])} style={style}>

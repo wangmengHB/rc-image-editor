@@ -17,21 +17,14 @@ export default class CanvasSpace extends React.Component<CanvasSpaceProps> {
 
 
   componentDidMount() {
-    const { layerController } = this.props;
-
-    const node = this.refs.mainCanvas;
+    const { layerController } = this.props;  
     const workspaceNode = this.refs.workspace;
-    if (!node) {
+    if (!workspaceNode) {
       throw new Error('failed to get canvas element!');
     }
-    const fCanvas = new fabric.Canvas(node, {preserveObjectStacking: true});
-    let webglBackend = new fabric.WebglFilterBackend();
-    fabric.filterBackend = fabric.initFilterBackend();
-    fabric.filterBackend = webglBackend;
-    fabric.Object.prototype.transparentCorners = false;
-    fabric.Object.prototype.padding = 5;
-    (window as any)._c = fCanvas;
-    layerController.init(fCanvas, workspaceNode);
+    console.log(layerController.fCanvas);
+    (workspaceNode as any).appendChild(layerController.fCanvas.wrapperEl);
+    layerController.registerContainer(workspaceNode);
   }
 
   render() {
@@ -40,9 +33,7 @@ export default class CanvasSpace extends React.Component<CanvasSpaceProps> {
 
     return (
       <div className={classnames([styles['work-canvas'], className])} style={style}>
-        <div ref="workspace" className={styles['canvas-zone']}>
-          <canvas ref="mainCanvas" className={styles['canvas']} />
-        </div>
+        <div ref="workspace" className={styles['canvas-zone']}></div>
       </div>
     )
   }

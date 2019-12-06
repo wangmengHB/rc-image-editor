@@ -14,21 +14,26 @@ export default class LayerController {
 
   constructor(cmp: any) {
     this.cmp = cmp;
-  }
-
-  init(canvas, container) {
-    this.fCanvas = canvas;
-    this.container = container;
+    const node = document.createElement('canvas');
+    this.fCanvas = new fabric.Canvas(node, {preserveObjectStacking: true});
+    let webglBackend = new fabric.WebglFilterBackend();
+    fabric.filterBackend = fabric.initFilterBackend();
+    fabric.filterBackend = webglBackend;
+    fabric.Object.prototype.transparentCorners = false;
+    fabric.Object.prototype.padding = 5;
     this.fCanvas.on('selected', () => {
       console.log('canvas selected');
       this.cmp.forceUpdate();
     });
     this.editMode = CanvasEditMode.Pan;
-    this.cmp.forceUpdate();
+  }
+
+  registerContainer(container) {
+    this.container = container;
   }
 
 
-  addImage(imageEle, filename, width, height) {
+  addImage(imageEle, filename) {
     const oImg = new fabric.Image(imageEle, { name: filename});   
     const brightnessFilter = new fabric.Image.filters.Brightness({brightness: 0});
     const contrastFilter = new fabric.Image.filters.Contrast({contrast: 0});
@@ -45,6 +50,8 @@ export default class LayerController {
       this.cmp.forceUpdate();
     });
     oImg.on('mousemove', () => {
+
+      // todo: throttle 
       this.cmp.forceUpdate();
     });
     (window as any)._o = oImg;
