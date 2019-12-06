@@ -17,6 +17,18 @@ export const MAX_POS_VAL = 40000;
 export const MIN_POS_VAL = -MAX_POS_VAL;
 
 
+export const CROP_STYLE = Object.freeze({
+  borderColor: "#fff",
+  cornerColor: "#fff",
+  cornerSize: 16,
+  cornerStrokeColor: "#fff",
+  cornerStyle: "circle",
+  lineWidth: 2,
+  transparentCorners: false
+})
+
+
+
 export enum Direction {
   Up = 'up',
   Down = 'down',
