@@ -1,7 +1,7 @@
 import * as React from 'react';
 import classnames from 'classnames';
 import { Icon, Button, Input, InputNumber } from 'antd';
-import { Direction, MIN_SCALE } from '../../const';
+import { Direction, MIN_SCALE, MIN_POS_VAL, MAX_POS_VAL } from '../../const';
 
 const styles = require('./index.module.less');
 
@@ -45,9 +45,8 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
 
   renderItem = (item) => {
     const { layerController } = this.props;
-    const ele = item.getElement();
-    
-    const {name, width, height, left, top, } = item;
+    const ele = item.getElement();   
+    const { name, width, height, left, top, } = item;
     let scaleX = item.get('scaleX');
     let scaleY = item.get('scaleY');
     scaleX = scaleX <= MIN_SCALE? 0: scaleX;
@@ -85,39 +84,55 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
             <Icon type="delete" theme="filled"/>
           </Button>
         </div>
-        <div className={styles['param']}>
+        <div className={styles['param-item']}>
           <span className={styles['label']}>x:</span>
-          <Input 
+          <InputNumber 
             className={styles['value']}
             disabled={!isActive}  
             value={left}
-            onChange={(e) => this.changeItemParam(e.target.value, 'left', item)} 
+            min={MIN_POS_VAL}
+            max={MAX_POS_VAL}
+            step={1}
+            onChange={(val) => this.changeItemParam(val, 'left', item)} 
           />
+        </div>
+        <div className={styles['param-item']}>
           <span className={styles['label']}>y:</span>
-          <Input 
+          <InputNumber 
             className={styles['value']} 
             disabled={!isActive} 
             value={top}
-            onChange={(e) => this.changeItemParam(e.target.value, 'top', item)} 
+            min={MIN_POS_VAL}
+            max={MAX_POS_VAL}
+            step={1}
+            onChange={(val) => this.changeItemParam(val, 'top', item)} 
           />
         </div>
-        <div className={styles['param']}>
+        <div className={styles['param-item']}>
           <span className={styles['label']}>宽:</span>
-          <Input 
+          <InputNumber 
             className={styles['value']} 
             disabled={!isActive} 
             value={width}
-            onChange={(e) => this.changeItemParam(e.target.value, 'width', item)} 
+            min={MIN_POS_VAL}
+            max={MAX_POS_VAL}
+            step={1}
+            onChange={(val) => this.changeItemParam(val, 'width', item)} 
           />
+        </div>
+        <div className={styles['param-item']}>
           <span className={styles['label']}>高:</span>
-          <Input 
+          <InputNumber 
             className={styles['value']} 
             disabled={!isActive} 
             value={height}
-            onChange={(e) => this.changeItemParam(e.target.value, 'height', item)} 
+            min={MIN_POS_VAL}
+            max={MAX_POS_VAL}
+            step={1}
+            onChange={(val) => this.changeItemParam(val, 'height', item)} 
           />
         </div>
-        <div className={styles['param']}>
+        <div className={styles['param-item']}>
           <span className={styles['label']}>缩放x:</span>
           <InputNumber 
             className={styles['value']} 
@@ -128,6 +143,8 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
             step={0.1}
             onChange={(val) => this.changeItemParam(val, 'scaleX', item)} 
           />
+        </div>
+        <div className={styles['param-item']}>
           <span className={styles['label']}>缩放y:</span>
           <InputNumber 
             className={styles['value']} 
@@ -137,18 +154,14 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
             step={0.1}
             max={10}
             onChange={(val) => this.changeItemParam(val, 'scaleY', item)} 
-          />
-          
+          />     
         </div>
         <div 
           className={classnames({[styles['thunb-container']]: true, })}
           onClick={() => this.setActive(item)}
           ref={(node) => {
             if (node) {
-              for (let i = node.children.length - 1; i >= 0; i--) {
-                const child = node.children[i];
-                node.removeChild(child);
-              }
+              node.innerHTML = null;
               (node as HTMLElement).appendChild(ele)
             }
           }}

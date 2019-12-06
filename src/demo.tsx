@@ -15,6 +15,6 @@ document.body.appendChild(root);
 
 
 ReactDOM.render(
-  <ImageEditorView/>,
+  <ImageEditorView style={{ height: 700}}/>,
   root
 )

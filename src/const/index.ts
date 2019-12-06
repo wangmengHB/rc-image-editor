@@ -13,6 +13,9 @@ export const MIN_SCALE = 0.0001;
 export const MAX_CANVAS_PIXEL_SIZE = 40000;
 export const MIN_CANVAS_PIXEL_SIZE = 20;
 
+export const MAX_POS_VAL = 40000;
+export const MIN_POS_VAL = -MAX_POS_VAL;
+
 
 export enum Direction {
   Up = 'up',
