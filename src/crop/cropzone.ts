@@ -48,6 +48,7 @@ export default fabric.util.createClass(fabric.Rect, /** @lends Cropzone.prototyp
     _renderCropzone() {
         const cropzoneDashLineWidth = 7;
         const cropzoneDashLineOffset = 7;
+        debugger;
 
         // Calc original scale
         const originalFlipX = this.flipX ? -1 : 1;

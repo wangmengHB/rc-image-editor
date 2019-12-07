@@ -43,6 +43,7 @@ export default class LayerController {
       this.cmp.forceUpdate();
     });
     this.editMode = CanvasEditMode.Pan;
+    (window as any)._o = this.fCanvas;
   }
 
   registerContainer(container) {
@@ -66,7 +67,7 @@ export default class LayerController {
       console.log('image selected');
       this.cmp.forceUpdate();
     });
-    oImg.on('mousemove', () => {
+    oImg.on('mouseup', () => {
 
       // todo: throttle 
       this.cmp.forceUpdate();
