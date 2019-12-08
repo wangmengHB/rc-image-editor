@@ -55,20 +55,21 @@ export default class Crop {
 
   start() {
 
+    this.fCanvas.remove(this.cropzone);
+
     this.fCanvas.forEachObject(function (obj) {
       // {@link http://fabricjs.com/docs/fabric.Object.html#evented}
       obj.evented = false;
     });
 
     
-
     const totalWidth = this.fCanvas.getWidth();
     const totalHeight = this.fCanvas.getHeight();
     this.cropzone.set({
       width: totalWidth,
       height: totalHeight,
     });
-
+    this.cropzone.scale(1);
     console.log('totalWidth', totalWidth);
 
 
@@ -77,7 +78,7 @@ export default class Crop {
     
     this.fCanvas.discardActiveObject();
     
-    // this.fCanvas.remove(this.cropzone);
+    
 
     let presetRatio = 1.333;
 
@@ -88,13 +89,18 @@ export default class Crop {
 
     this.fCanvas.setActiveObject(this.cropzone);
 
-    // this.fCanvas.renderAll();
+    
 
     this.fCanvas.on('selection:cleared', this.alwaysShowCropzone);
 
     this.fCanvas.selection = false;
 
-    (window as any)._cropzone = this.cropzone;
+
+    this.fCanvas.renderAll();
+
+    
+
+    
 
 
   }
@@ -104,9 +110,10 @@ export default class Crop {
     this.fCanvas.remove(this.cropzone);
 
     this.fCanvas.selection = true;
+    this.fCanvas.defaultCursor = 'default';
     this.fCanvas.forEachObject(function (obj) {
       // {@link http://fabricjs.com/docs/fabric.Object.html#evented}
-      obj.evented = false;
+      obj.evented = true;
     });
     
   }
@@ -146,13 +153,13 @@ export default class Crop {
 
   getCropperParam() {
     const cropzone = this.cropzone;
-    const { left, top, width, height, zoomX, zoomY} = cropzone;
+    const { left, top, width, height, scaleX, scaleY} = cropzone;
 
     return {
       left: Math.floor(left),
       top: Math.floor(top),
-      width: Math.floor(width * zoomX),
-      height: Math.floor(height * zoomY),
+      width: Math.floor(width * scaleX),
+      height: Math.floor(height * scaleY),
     };
 
   }

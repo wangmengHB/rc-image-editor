@@ -227,6 +227,8 @@ export default class LayerController {
     this.update();
 
     this.setScale(this.scale);
+    this.cropper.end();
+    this.cropper.start();
 
 
 
