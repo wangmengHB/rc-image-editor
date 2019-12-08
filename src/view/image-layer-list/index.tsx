@@ -1,7 +1,7 @@
 import * as React from 'react';
 import classnames from 'classnames';
 import { Icon, Button, Input, InputNumber } from 'antd';
-import { Direction, MIN_SCALE, MIN_POS_VAL, MAX_POS_VAL } from '../../const';
+import { Direction, MIN_SCALE, MIN_POS_VAL, MAX_POS_VAL, CanvasEditMode } from '../../const';
 
 const styles = require('./index.module.less');
 
@@ -33,7 +33,12 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
 
   setActive = (item) => {
     const { layerController } = this.props;
-    layerController.setActiveObject(item);
+    const editMode = layerController.editMode;
+    if (editMode === CanvasEditMode.Pan || editMode === CanvasEditMode.Filter) {
+      layerController.setActiveObject(item);
+    }
+
+    
   }
 
   changeItemParam = (value, type, item) => {

@@ -35,23 +35,21 @@ export default class Crop {
       lockScalingFlip: true,
       lockRotation: true,
       lineWidth: 10,
+      cornerSize: 24,
+      cornerStrokeColor: "#000",
+      cornerColor: "#AAA",
     });
 
     (window as any)._cropzone = this.cropzone;
 
-    this.cropzone.onDeselect(() => {
-      console.log('on deselect');
-      this.cropzone.bringToFront();
-    })
-
-    
-
   }
 
   alwaysShowCropzone = () => {
-    console.log('bring');
+    console.log('leave');
+    
     this.cropzone.bringToFront();
     this.fCanvas.setActiveObject(this.cropzone);
+    
   }
 
 
@@ -62,7 +60,7 @@ export default class Crop {
       obj.evented = false;
     });
 
-    this.fCanvas.selection = false;
+    
 
     const totalWidth = this.fCanvas.getWidth();
     const totalHeight = this.fCanvas.getHeight();
@@ -83,21 +81,18 @@ export default class Crop {
 
     let presetRatio = 1.333;
 
-    // this.cropzone.set(presetRatio ? this._getPresetCropSizePosition(presetRatio) : DEFAULT_OPTION);
-
-    // this.cropzone.set({
-    //   left: 20,
-    //   top: 30,
-    //   width: 200,
-    //   height: 300,
-    // })
+    
 
     this.fCanvas.add(this.cropzone);
     // this.fCanvas.selection = true;
 
     this.fCanvas.setActiveObject(this.cropzone);
 
+    // this.fCanvas.renderAll();
+
     this.fCanvas.on('selection:cleared', this.alwaysShowCropzone);
+
+    this.fCanvas.selection = false;
 
     (window as any)._cropzone = this.cropzone;
 
@@ -105,10 +100,15 @@ export default class Crop {
   }
 
   end() {
+    this.fCanvas.off('selection:cleared', this.alwaysShowCropzone);
     this.fCanvas.remove(this.cropzone);
-    this.fCanvas.selection = true;
-    this.fCanvas.off('object:selected', this.alwaysShowCropzone);
 
+    this.fCanvas.selection = true;
+    this.fCanvas.forEachObject(function (obj) {
+      // {@link http://fabricjs.com/docs/fabric.Object.html#evented}
+      obj.evented = false;
+    });
+    
   }
 
 
@@ -143,6 +143,19 @@ export default class Crop {
     };
   }
 
+
+  getCropperParam() {
+    const cropzone = this.cropzone;
+    const { left, top, width, height, zoomX, zoomY} = cropzone;
+
+    return {
+      left: Math.floor(left),
+      top: Math.floor(top),
+      width: Math.floor(width * zoomX),
+      height: Math.floor(height * zoomY),
+    };
+
+  }
 
 
   doCropAction() {

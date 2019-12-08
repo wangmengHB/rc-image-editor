@@ -19,7 +19,7 @@ export default class FilterPanel extends React.Component<FilterPanelProps>{
   onFilterChange = (type, val) => {
     const { layerController } = this.props;
     const target = layerController.getActiveObject();
-    if (!target) {
+    if (!target || target.type !== 'image') {
       return message.error('请选择一个图层，再使用滤镜！');
     }
 
@@ -85,18 +85,25 @@ export default class FilterPanel extends React.Component<FilterPanelProps>{
     const { layerController } = this.props;
     const editMode = layerController.editMode;
     let brightness = 0, contrast = 0, hue = 0, saturation = 0;
-    let disabled = true;
+    let disabled = false;
     const target = layerController.getActiveObject();
-    if (target) {
-      disabled = false;
-    }
-    if (target && target.filters.length >= 4) {
+    console.log('target', target);
+    (window as any)._t = target;
+
+    // if (!target || target.type !== 'image') {
+    //   disabled = false;
+    // }
+    if (target && target.type === 'image' && target.filters.length >= 4) {
       // todo get param from target
       brightness = target.filters[0].brightness;
       contrast = target.filters[1].contrast;
       hue = target.filters[2].rotation;
       saturation = target.filters[3].saturation;
+    } else {
+      disabled = true;
     }
+
+    console.log('disabled', disabled);
       
 
 

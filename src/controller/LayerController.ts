@@ -39,7 +39,7 @@ export default class LayerController {
     fabric.enableGLFiltering = true;
     this.fCanvas = new fabric.Canvas(node, {
       preserveObjectStacking: true,
-      // enableRetinaScaling: false
+      enableRetinaScaling: false
     });
     fabric.Object.prototype.transparentCorners = false;
     fabric.Object.prototype.padding = 5;
@@ -47,6 +47,12 @@ export default class LayerController {
       console.log('canvas selected');
       this.update();
     });
+    this.fCanvas.on('mouse:up', () => {
+      console.log('canvas mouse up');
+      this.cmp.forceUpdate();
+
+    });
+
     this.cropper = new Cropper(this.fCanvas);
     this.editMode = CanvasEditMode.Pan;
     (window as any)._c = this.fCanvas;
@@ -71,9 +77,13 @@ export default class LayerController {
     ];
     oImg.on('selected', () => {
       console.log('image selected');
+      if (this.editMode === CanvasEditMode.Crop) {
+        return;
+      }
+
       this.cmp.forceUpdate();
     });
-    oImg.on('mouseup', () => {
+    oImg.on('mouse:up', () => {
 
       // todo: throttle 
       this.cmp.forceUpdate();
@@ -113,7 +123,7 @@ export default class LayerController {
   }
 
   setScale = (scale) => {
-    if (!this.fCanvas || typeof scale !== 'number') {
+    if (typeof scale !== 'number') {
       return;
     }
     const pixelWidth = this.fCanvas.getWidth();
@@ -125,33 +135,21 @@ export default class LayerController {
 
 
   getAllLayers() {
-    if (!this.fCanvas) {
-      return [];
-    }
-
     const objects = this.fCanvas.getObjects() || [];
     return objects.filter(item => item.type === 'image');
 
   }
 
   delete(item) {
-    if (!this.fCanvas) {
-      return;
-    }
     this.fCanvas.remove(item);
   }
 
   getActiveObject() {
-    if (!this.fCanvas) {
-      return;
-    }
     return this.fCanvas.getActiveObject();
   }
 
   setActiveObject(item) {
-    if (!this.fCanvas) {
-      return;
-    }
+    // this.fCanvas.discardActiveObject();
     this.fCanvas.setActiveObject(item)
   }
 
@@ -176,39 +174,62 @@ export default class LayerController {
 
 
   getSize() {
-    if (!this.fCanvas) {
-      return [0, 0];
-    }
     const width = this.fCanvas.getWidth();
     const height = this.fCanvas.getHeight();
     return [width, height];
   }
 
   getZoom() {
-    if (!this.fCanvas) {
-      return;
-    }
     return this.fCanvas.getZoom();
   }
 
   changeDimension(type, val) {
-    if (!this.fCanvas) {
-      return;
-    }
-
     this.fCanvas.setDimensions({[type]: val});
     this.setScale(this.scale);
     this.update();
-
   }
 
 
-  update() {
-    if (!this.fCanvas) {
-      return;
-    }
+  update = () => {
     this.fCanvas.renderAll();
     this.cmp.forceUpdate();
+  }
+
+  getCropperParam() {
+    return this.cropper.getCropperParam();
+  }
+
+  setCropperParam() {
+    const cropzone = this.cropper.cropzone;
+
+  }
+
+  doCropAction() {
+    const { left, top, width, height } = this.cropper.getCropperParam();
+
+    this.fCanvas.forEachObject((obj) => {
+      const originLeft = obj.left;
+      const originTop = obj.top;
+
+      obj.set({
+        left: originLeft - left,
+        top: originTop - top,
+      })
+    })
+
+    this.fCanvas.setDimensions({
+      width: width,
+      height: height,
+    });
+
+    
+
+    this.update();
+
+    this.setScale(this.scale);
+
+
+
   }
 
 
