@@ -5,6 +5,8 @@ import {
 } from '../const';
 import { numbers, arrays } from 'util-kit';
 import Cropzone from '../crop/cropzone';
+import Cropper from './cropper';
+
 
 const { mapArrayOrNot } = arrays;
 
@@ -26,24 +28,28 @@ export default class LayerController {
 
   editMode: CanvasEditMode;
 
+  cropper: Cropper;
+
   cropzone: any = null;
 
 
   constructor(cmp: any) {
     this.cmp = cmp;
     const node = document.createElement('canvas');
-    this.fCanvas = new fabric.Canvas(node, {preserveObjectStacking: true});
-    let webglBackend = new fabric.WebglFilterBackend();
-    fabric.filterBackend = fabric.initFilterBackend();
-    fabric.filterBackend = webglBackend;
+    fabric.enableGLFiltering = true;
+    this.fCanvas = new fabric.Canvas(node, {
+      preserveObjectStacking: true,
+      // enableRetinaScaling: false
+    });
     fabric.Object.prototype.transparentCorners = false;
     fabric.Object.prototype.padding = 5;
     this.fCanvas.on('selected', () => {
       console.log('canvas selected');
-      this.cmp.forceUpdate();
+      this.update();
     });
+    this.cropper = new Cropper(this.fCanvas);
     this.editMode = CanvasEditMode.Pan;
-    (window as any)._o = this.fCanvas;
+    (window as any)._c = this.fCanvas;
   }
 
   registerContainer(container) {
@@ -156,76 +162,17 @@ export default class LayerController {
     // todo: sth
 
     if (mode === CanvasEditMode.Crop) {
-      if (!this.cropzone) {
-        this.cropzone = new Cropzone(this.fCanvas, {
-          left: 0,
-          top: 0,
-          width: 0.5,
-          height: 0.5,
-          strokeWidth: 0, // {@link https://github.com/kangax/fabric.js/issues/2860}
-          cornerSize: 10,
-          cornerColor: 'black',
-          fill: 'transparent',
-          hasRotatingPoint: false,
-          hasBorders: false,
-          lockScalingFlip: true,
-          lockRotation: true
-        }, CROP_STYLE);
-      }
-
-      this.fCanvas.discardActiveObject();
-      this.fCanvas.selection = false;
-      this.fCanvas.remove(this.cropzone);
-
-      let presetRatio = 1.333;
-
-      this.cropzone.set(presetRatio ? this._getPresetCropSizePosition(presetRatio) : DEFAULT_OPTION);
-
-      this.fCanvas.add(this.cropzone);
-      this.fCanvas.selection = true;
-
-      this.fCanvas.setActiveObject(this.cropzone);
-
-      (window as any)._cropzone = this.cropzone;
-
+      this.cropper.start();    
     } else {
-      this.fCanvas.remove(this.cropzone);
+      this.cropper.end();
     }
 
-    this.cmp.forceUpdate();
+
+    this.update();
   }
 
 
-  /**
-     * Set a cropzone square
-     * @param {number} presetRatio - preset ratio
-     * @returns {{left: number, top: number, width: number, height: number}}
-     * @private
-     */
-    _getPresetCropSizePosition(presetRatio) {
-      
-      const originalWidth = this.fCanvas.getWidth();
-      const originalHeight = this.fCanvas.getHeight();
-
-      const standardSize = (originalWidth >= originalHeight) ? originalWidth : originalHeight;
-      const getScale = (value, orignalValue) => (value > orignalValue) ? orignalValue / value : 1;
-
-      let width = standardSize * presetRatio;
-      let height = standardSize;
-
-      const scaleWidth = getScale(width, originalWidth);
-      [width, height] = mapArrayOrNot([width, height], sizeValue => sizeValue * scaleWidth) as number[];
-
-      const scaleHeight = getScale(height, originalHeight);
-      [width, height] = mapArrayOrNot([width, height], sizeValue => sizeValue * scaleHeight) as number[];
-
-      return {
-          top: (originalHeight - height) / 2,
-          left: (originalWidth - width) / 2,
-          width,
-          height
-      };
-  }
+  
 
 
   getSize() {

@@ -48,7 +48,6 @@ export default fabric.util.createClass(fabric.Rect, /** @lends Cropzone.prototyp
     _renderCropzone() {
         const cropzoneDashLineWidth = 7;
         const cropzoneDashLineOffset = 7;
-        debugger;
 
         // Calc original scale
         const originalFlipX = this.flipX ? -1 : 1;
@@ -126,6 +125,8 @@ export default fabric.util.createClass(fabric.Rect, /** @lends Cropzone.prototyp
     _fillOuterRect(ctx, fillStyle) {
         const {x, y} = this._getCoordinates();
 
+        console.log('_fillOuterRect fillStyle', fillStyle);
+
         ctx.save();
         ctx.fillStyle = fillStyle;
         ctx.beginPath();
@@ -162,6 +163,7 @@ export default fabric.util.createClass(fabric.Rect, /** @lends Cropzone.prototyp
         const y = this._caculateInnerPosition(outerY, (outerY[2] - outerY[1]) / 3);
 
         ctx.save();
+        ctx.fillStyle = 'rgba(255,255,255,0)';
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.lineWidth = this.options.lineWidth;
         ctx.beginPath();
