@@ -46,10 +46,12 @@ export default class Crop {
 
   alwaysShowCropzone = () => {
     console.log('leave');
-    
-    this.cropzone.bringToFront();
-    this.fCanvas.setActiveObject(this.cropzone);
-    
+
+    if (this.cropzone) {
+      this.cropzone.bringToFront();
+      this.fCanvas.setActiveObject(this.cropzone);
+    }
+     
   }
 
 
@@ -85,8 +87,6 @@ export default class Crop {
     
 
     this.fCanvas.add(this.cropzone);
-    // this.fCanvas.selection = true;
-
     this.fCanvas.setActiveObject(this.cropzone);
 
     
@@ -100,7 +100,6 @@ export default class Crop {
 
     
 
-    
 
 
   }

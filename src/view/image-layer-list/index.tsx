@@ -31,9 +31,12 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
     this.forceUpdate();
   }
 
-  setActive = (item) => {
+  setActive = (item, e) => {
     const { layerController } = this.props;
     const editMode = layerController.editMode;
+    e.preventDefault();
+    e.stopPropagation();
+
     if (editMode === CanvasEditMode.Pan || editMode === CanvasEditMode.Filter) {
       layerController.setActiveObject(item);
     }
@@ -60,10 +63,25 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
     
     const isActive = item === layerController.getActiveObject(); 
     return (
-      <div className={classnames({[styles['item']]: true, [styles['active']]: isActive})} key={`thunb-${item.name}`}>
-        <div className={styles['name']}>
-          <span>名称:</span>
-          {name}   
+      <div 
+        className={classnames({[styles['item']]: true, [styles['active']]: isActive})} 
+        key={item.uid}     
+      >
+        <div className={styles['preview']}>
+          <div
+            onClick={(e) => this.setActive(item, e)} 
+            className={classnames({[styles['thunb-container']]: true, })}
+            ref={(node: HTMLElement) => {
+              if (node) {
+                node.innerHTML = '';
+                node.appendChild(ele)
+              }
+            }}
+          />
+          <div className={styles['info']}>
+            <span>名称:</span>
+            <span>{name}</span>
+          </div>   
         </div>
         <div className={styles['action']}>
           
@@ -165,16 +183,7 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
             onChange={(val) => this.changeItemParam(val, 'scaleY', item)} 
           />     
         </div>
-        <div 
-          className={classnames({[styles['thunb-container']]: true, })}
-          onClick={() => this.setActive(item)}
-          ref={(node) => {
-            if (node) {
-              node.innerHTML = null;
-              (node as HTMLElement).appendChild(ele)
-            }
-          }}
-        />
+        
       </div>
     );
   }
@@ -188,7 +197,10 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
     
     return (
       <div className={classnames([styles['image-layer-list'], className])} style={style}>
-        <div className={styles['title']}>图层列表</div>
+        <div className={styles['title']}>
+          图层列表 
+          <span className={styles['sub-title']}>(从底到顶排序)</span>
+        </div>
         <div className={styles['list']}>
           {
             list.map(this.renderItem)

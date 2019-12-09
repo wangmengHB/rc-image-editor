@@ -35,12 +35,9 @@ export default class ToolPanel extends React.Component<ToolPanelProps> {
     } else {
       this.setState({cropperPanelVisible: false});
     }
-
   }
 
   
-
-
   render() {
     const { className, style, layerController } = this.props;
     const { filterPanelVisible, cropperPanelVisible } = this.state;
@@ -73,24 +70,30 @@ export default class ToolPanel extends React.Component<ToolPanelProps> {
               裁剪
             </a>
           </Menu.Item>
-          <Menu.Item key={CanvasEditMode.Pencil}>
+          {/* <Menu.Item key={CanvasEditMode.Pencil}>
             <a
               className={classnames({[styles['active']]: editMode === CanvasEditMode.Pencil})}
             >
               画笔
             </a>
-          </Menu.Item>
+          </Menu.Item> */}
         </Menu>
 
         {
           editMode === CanvasEditMode.Filter && filterPanelVisible? (
-            <FilterPanel layerController={layerController}/>
+            <FilterPanel 
+              layerController={layerController}
+              onToggle={() => this.changeMode({key: CanvasEditMode.Filter})}
+            />
           ): null
         }
 
         {
           editMode === CanvasEditMode.Crop && cropperPanelVisible? (
-            <CropperPanel layerController={layerController} />
+            <CropperPanel 
+              layerController={layerController} 
+              onToggle={() => this.changeMode({key: CanvasEditMode.Crop})}
+            />
           ): null
         }
 

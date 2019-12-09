@@ -3,13 +3,13 @@
 
 .tool-panel() {
   position: absolute;
-  left: 100%;
+  left: 0;
   top: 0;
   bottom: 0;
   width: @tool-width;
   z-index: 2;
   background: #fff;
-  padding: 20px 5px;
+  padding: 10px 5px;
   font-size: 10px;
 }
 
@@ -26,10 +26,20 @@
 
   }
 
-
   .active {
     color: red;
   }
+
+  .tool-header{
+    margin: 10px 0;
+    .tool-title {
+      margin-left: 20px;
+      font-size: 14px; 
+      font-weight: 600;
+    }
+
+  }
+
 
   .filter-panel{
     .tool-panel();
@@ -66,7 +76,7 @@
 
   .cropper-panel{
     .tool-panel();
-    width: 120px;
+    // width: 120px;
 
     .cropper-param{
       width: 100%;

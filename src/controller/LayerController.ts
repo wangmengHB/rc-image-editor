@@ -1,9 +1,10 @@
 import { fabric } from 'fabric';
 import { 
   CANVAS_MAX_WIDTH, CANVAS_MAX_HEIGHT, CROP_STYLE,
-  CanvasEditMode, CANVAS_PADDING 
+  CanvasEditMode, CANVAS_PADDING, 
+  CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, 
 } from '../const';
-import { numbers, arrays } from 'util-kit';
+import { numbers, arrays, generateUuid } from 'util-kit';
 import Cropzone from '../crop/cropzone';
 import Cropper from './cropper';
 
@@ -36,6 +37,8 @@ export default class LayerController {
   constructor(cmp: any) {
     this.cmp = cmp;
     const node = document.createElement('canvas');
+    node.width = CANVAS_INIT_WIDTH;
+    node.height = CANVAS_INIT_HEIGHT;
     fabric.enableGLFiltering = true;
     this.fCanvas = new fabric.Canvas(node, {
       preserveObjectStacking: true,
@@ -50,8 +53,10 @@ export default class LayerController {
     this.fCanvas.on('mouse:up', () => {
       console.log('canvas mouse up');
       this.cmp.forceUpdate();
-
     });
+    this.fCanvas.on('object:modified', () => {
+      this.cmp.forceUpdate();
+    })
 
     this.cropper = new Cropper(this.fCanvas);
     this.editMode = CanvasEditMode.Pan;
@@ -64,7 +69,9 @@ export default class LayerController {
 
 
   addImage(imageEle, filename) {
-    const oImg = new fabric.Image(imageEle, { name: filename});   
+    const uid = generateUuid();
+
+    const oImg = new fabric.Image(imageEle, { name: filename, uid: uid});   
     const brightnessFilter = new fabric.Image.filters.Brightness({brightness: 0});
     const contrastFilter = new fabric.Image.filters.Contrast({contrast: 0});
     const hueFilter = new fabric.Image.filters.HueRotation({rotation: 0});
@@ -149,15 +156,18 @@ export default class LayerController {
   }
 
   setActiveObject(item) {
-    // this.fCanvas.discardActiveObject();
+    this.fCanvas.discardActiveObject();
     this.fCanvas.setActiveObject(item)
   }
 
 
   setEditMode(mode) {
+    const prevMode = this.editMode;
+    if (prevMode === mode) {
+      return;
+    }
 
     this.editMode = mode;
-    // todo: sth
 
     if (mode === CanvasEditMode.Crop) {
       this.cropper.start();    

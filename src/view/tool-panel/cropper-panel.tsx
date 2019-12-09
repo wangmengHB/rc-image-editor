@@ -9,9 +9,17 @@ export interface CropperPanelProps{
   className?: string;
   style?: React.CSSProperties;
   layerController: any;
+  onToggle: Function;
 }
 
 export default class CropperPanel extends React.Component<CropperPanelProps>{
+
+  toggle = () => {
+    const { onToggle } = this.props;
+    if (typeof onToggle === 'function') {
+      onToggle();
+    }
+  }
 
   doCrop = () => {
     const {layerController} = this.props;
@@ -27,6 +35,10 @@ export default class CropperPanel extends React.Component<CropperPanelProps>{
 
     return (
       <div className={styles['cropper-panel']}>
+        <div className={styles['tool-header']}>
+          <a onClick={this.toggle}><Icon type="arrow-left"/>收起</a>
+          <span className={styles['tool-title']}>裁剪</span>
+        </div>
         <Button type="primary" onClick={this.doCrop}>裁剪</Button>
         <div>裁剪参数</div>
         <div className={styles['cropper-param']}>

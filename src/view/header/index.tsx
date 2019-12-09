@@ -1,6 +1,10 @@
 import * as React from 'react';
 import { Button, Icon, Modal, Slider, InputNumber } from 'antd';
-import { MAX_CANVAS_PIXEL_SIZE, MIN_CANVAS_PIXEL_SIZE } from '../../const';
+import { 
+  MAX_CANVAS_PIXEL_SIZE, 
+  MIN_CANVAS_PIXEL_SIZE, 
+  CanvasEditMode,
+} from '../../const';
 
 const PERCENT = 100;
 const MIN = 0.1;
@@ -45,8 +49,7 @@ export default class Header extends React.Component<HeaderProps> {
       }
       image.src = base64;
     };
-    reader.readAsDataURL(e.target.files[0]);
-    (window as any).fi = this.refs.file; 
+    reader.readAsDataURL(e.target.files[0]); 
   }
 
   openFileDialog = () => {
@@ -71,11 +74,24 @@ export default class Header extends React.Component<HeaderProps> {
       zoom = 1;
     }
     const [width, height] = layerController.getSize();
+    const editMode = layerController.editMode;
+    const loadEnable = editMode === CanvasEditMode.Pan;
+
+
+
+
     
     return (
       <div className={styles.header}>
         
-        <Button className={styles['btn']} type="primary" onClick={this.openFileDialog}>加载本地图片</Button>
+        <Button 
+          className={styles['btn']} 
+          type="primary" 
+          onClick={this.openFileDialog}
+          disabled={!loadEnable}
+        >
+          加载本地图片
+        </Button>
         <input ref="file" className={styles.file} type="file" accept="image" onChange={this.loadImage}/>
         <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成图片</Button>
 

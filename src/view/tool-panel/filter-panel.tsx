@@ -11,10 +11,18 @@ export interface FilterPanelProps{
   className?: string;
   style?: React.CSSProperties;
   layerController: any;
+  onToggle: Function;
 }
 
 
 export default class FilterPanel extends React.Component<FilterPanelProps>{
+  toggle = () => {
+    const { onToggle } = this.props;
+    if (typeof onToggle === 'function') {
+      onToggle();
+    }
+  }
+
 
   onFilterChange = (type, val) => {
     const { layerController } = this.props;
@@ -87,12 +95,7 @@ export default class FilterPanel extends React.Component<FilterPanelProps>{
     let brightness = 0, contrast = 0, hue = 0, saturation = 0;
     let disabled = false;
     const target = layerController.getActiveObject();
-    console.log('target', target);
-    (window as any)._t = target;
-
-    // if (!target || target.type !== 'image') {
-    //   disabled = false;
-    // }
+    
     if (target && target.type === 'image' && target.filters.length >= 4) {
       // todo get param from target
       brightness = target.filters[0].brightness;
@@ -103,12 +106,13 @@ export default class FilterPanel extends React.Component<FilterPanelProps>{
       disabled = true;
     }
 
-    console.log('disabled', disabled);
-      
-
-
+    
     return (
       <div className={styles['filter-panel']}>
+        <div className={styles['tool-header']}>
+          <a onClick={this.toggle}><Icon type="arrow-left"/>收起</a>
+          <span className={styles['tool-title']}>滤镜</span>
+        </div>
         <span><Icon type="info-circle" />请先选择图层</span>
         { this.createFilterItem('亮度', 'brightness', brightness, disabled) }
         { this.createFilterItem('对比度', 'contrast', contrast, disabled) }
