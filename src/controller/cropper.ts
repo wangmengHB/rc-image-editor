@@ -1,6 +1,6 @@
 import { 
   CANVAS_MAX_WIDTH, CANVAS_MAX_HEIGHT, CROP_STYLE,
-  CanvasEditMode, CANVAS_PADDING 
+  CanvasEditMode, CANVAS_PADDING, CROP_ZONE_ID
 } from '../const';
 import { fabric } from 'fabric';
 import { numbers, arrays } from 'util-kit';
@@ -25,10 +25,11 @@ export default class Crop {
     this.height = fCanvas.getHeight();
 
     this.cropzone = new fabric.Rect({
-      left: 0,
-      top: 0,
-      width: this.width,
-      height: this.height,
+      id: CROP_ZONE_ID,
+      left: 20,
+      top: 20,
+      width: this.width - 40,
+      height: this.height - 40,
       fill: 'transparent',
       hasRotatingPoint: false,
       hasBorders: true,
@@ -45,13 +46,11 @@ export default class Crop {
   }
 
   alwaysShowCropzone = () => {
-    console.log('leave');
-
-    if (this.cropzone) {
+    const objects = this.fCanvas.getObjects();
+    if (objects.indexOf(this.cropzone) > -1) {
       this.cropzone.bringToFront();
       this.fCanvas.setActiveObject(this.cropzone);
-    }
-     
+    }     
   }
 
 
@@ -65,16 +64,14 @@ export default class Crop {
     });
 
     
-    const totalWidth = this.fCanvas.getWidth();
-    const totalHeight = this.fCanvas.getHeight();
-    this.cropzone.set({
-      width: totalWidth,
-      height: totalHeight,
-    });
-    this.cropzone.scale(1);
-    console.log('totalWidth', totalWidth);
-
-
+    // const totalWidth = this.fCanvas.getWidth();
+    // const totalHeight = this.fCanvas.getHeight();
+    // this.cropzone.set({
+    //   width: totalWidth,
+    //   height: totalHeight,
+    // });
+    // this.cropzone.scale(1);
+    // console.log('totalWidth', totalWidth);
 
 
     

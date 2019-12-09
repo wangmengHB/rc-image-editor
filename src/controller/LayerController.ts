@@ -2,11 +2,12 @@ import { fabric } from 'fabric';
 import { 
   CANVAS_MAX_WIDTH, CANVAS_MAX_HEIGHT, CROP_STYLE,
   CanvasEditMode, CANVAS_PADDING, 
-  CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, 
+  CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, CROP_ZONE_ID,
 } from '../const';
-import { numbers, arrays, generateUuid } from 'util-kit';
+import { numbers, arrays, generateUuid, asyncs } from 'util-kit';
 import Cropzone from '../crop/cropzone';
 import Cropper from './cropper';
+const { timeout } = asyncs;
 
 
 const { mapArrayOrNot } = arrays;
@@ -42,7 +43,8 @@ export default class LayerController {
     fabric.enableGLFiltering = true;
     this.fCanvas = new fabric.Canvas(node, {
       preserveObjectStacking: true,
-      enableRetinaScaling: false
+      enableRetinaScaling: false,
+      containerClass: 'image-editor-canvas-container',
     });
     fabric.Object.prototype.transparentCorners = false;
     fabric.Object.prototype.padding = 5;
@@ -211,8 +213,8 @@ export default class LayerController {
 
   setCropperParam() {
     const cropzone = this.cropper.cropzone;
-
   }
+
 
   doCropAction() {
     const { left, top, width, height } = this.cropper.getCropperParam();
@@ -240,8 +242,61 @@ export default class LayerController {
     this.cropper.end();
     this.cropper.start();
 
+  }
+
+  exportImage() {
+
+    const canvasWidth = this.fCanvas.getWidth();
+    const canvasHeight = this.fCanvas.getHeight();
+    const canvas = document.createElement('canvas');
+    const fCanvas = new fabric.StaticCanvas(canvas, {
+      preserveObjectStacking: true,
+      enableRetinaScaling: false,
+    });
+    fCanvas.setDimensions({width: canvasWidth, height: canvasHeight});
+
+    (window as any).tmpC = fCanvas;
+
+    const data = this.fCanvas.toJSON();
+
+    return new Promise((resolve, reject) => {
+    
+      fCanvas.loadFromJSON(data, () => {
+
+        // if need crop
+
+        const { left, top, width, height } = this.cropper.getCropperParam();
+
+        fCanvas.forEachObject((obj) => {
+          const originLeft = obj.left;
+          const originTop = obj.top;
+
+          obj.set({
+            left: originLeft - left,
+            top: originTop - top,
+          })
+        });
+
+        fCanvas.setDimensions({
+          width: width,
+          height: height,
+        });
+
+        const objs = fCanvas.getObjects();
+        const cropzone = objs.find(item => item.id === CROP_ZONE_ID);
+        if (cropzone) {
+          fCanvas.remove(cropzone);
+        }
+        
+        const base64 = fCanvas.toDataURL();
+        resolve(base64);
 
 
+      });
+
+    });
+
+    
   }
 
 

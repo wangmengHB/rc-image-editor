@@ -16,6 +16,8 @@ export const MIN_CANVAS_PIXEL_SIZE = 20;
 export const MAX_POS_VAL = 40000;
 export const MIN_POS_VAL = -MAX_POS_VAL;
 
+export const CROP_ZONE_ID = 'crop_zone_id';
+
 
 export const CROP_STYLE = Object.freeze({
   borderColor: "#fff",
@@ -25,7 +27,9 @@ export const CROP_STYLE = Object.freeze({
   cornerStyle: "circle",
   lineWidth: 2,
   transparentCorners: false
-})
+});
+
+
 
 
 

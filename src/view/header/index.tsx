@@ -23,12 +23,14 @@ export default class Header extends React.Component<HeaderProps> {
 
   exportImage = () => {
     const { layerController } = this.props;
-    const base64 = layerController.fCanvas.toDataURL();
-    Modal.confirm({
-      title: '预览',
-      width: 600,
-      content: (<img style={{maxWidth: 500, border: '1px solid red'}} src={base64}/>)
-    })
+    layerController.exportImage().then(base64 => {
+      Modal.confirm({
+        title: '预览',
+        width: 600,
+        content: (<img style={{maxWidth: 500, border: '1px solid red'}} src={base64}/>)
+      })
+    });
+    
   }
 
 
@@ -36,7 +38,7 @@ export default class Header extends React.Component<HeaderProps> {
     const { layerController } = this.props;
     const reader = new FileReader();
     const filename = e.target.files[0].name;
-    reader.onload = (e) => {
+    reader.onload = (e: any) => {
       const base64: any = e.target.result;    
       const image = new Image();
       image.onload = () => {

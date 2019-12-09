@@ -71,7 +71,7 @@ export default class ImageLayerList extends React.Component<ImageLayerListProps>
           <div
             onClick={(e) => this.setActive(item, e)} 
             className={classnames({[styles['thunb-container']]: true, })}
-            ref={(node: HTMLElement) => {
+            ref={(node: HTMLElement | null) => {
               if (node) {
                 node.innerHTML = '';
                 node.appendChild(ele)
