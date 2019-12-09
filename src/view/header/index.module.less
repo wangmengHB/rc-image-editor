@@ -6,6 +6,11 @@
   line-height: 50px;
   box-sizing: border-box;
   border: solid 1px rgba(0,0,0,0.1);
+  font-size: 10px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+
 
   .file {
     display: none;
@@ -13,40 +18,60 @@
 
   .btn {
     margin: 0 10px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 12px;
   }
 
-  .control {
-    float: right;
-    font-size: 10px;    
-    width: 550px;
+  .control{
+
+    width: calc(100% - 100px);
+
     display: flex;
-    justify-content: start;
+    justify-content: flex-end;
     align-items: center;
-
-    .label {
-      width: 60px;
-    }
-
-    .value{
-      width: 76px;
-      height: 30px;
-      line-height: 30px;
-      margin-right: 10px;
-      font-size: 10px;
-    }
-
-    .slider{
-      padding: 1px;
-      width: 120px;
-      margin-right: 15px;
-    }
-
-    .percent{
-      height: 50px;
-      width: 40px;
-    }
-
+    flex-wrap: nowrap;
 
   }
+
+  
+  .checkbox{
+    font-size: 10px;
+  }
+    
+  .inputNumber{
+    width: 60px;
+    height: 20px;
+    line-height: 20px;
+    margin-right: 10px;
+    font-size: 10px;
+
+    :global(.ant-input-number-input) {
+      height: 20px;
+      line-height: 20px;
+      padding: 0 0 0 3px;
+    }
+
+  }
+
+  .slider{
+    padding: 1px;
+    width: 80px;
+    margin-right: 15px;
+  }
+
+  .percent{
+    height: 50px;
+    width: 40px;
+  }
+
+  .divider{
+    height: 24px;
+    margin-right: 10px;
+
+  }
+
+
+  
 
 }

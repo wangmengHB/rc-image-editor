@@ -1,5 +1,5 @@
 
-@tool-panel-width: 70px;
+@tool-panel-width: 0px;
 @image-layer-width: 240px;
 @min-height: 550px;
 @min-width: 900px;
@@ -9,7 +9,7 @@
   min-width: @min-width;
   min-height: @min-height;
   height: @min-height;
-  border: solid 1px rgba(0, 0, 0, 0.1);
+  border: solid 1px rgba(0, 0, 0, 0.6);
   font-size: 10px; 
   
   .main{
@@ -39,7 +39,7 @@
     position: absolute;
     left: @tool-panel-width;
     top: 0;
-    width: ~"calc(100% - @{tool-panel-width} - @{image-layer-width})";
+    width: ~"calc(100% - @{image-layer-width})";
   }
 
 }

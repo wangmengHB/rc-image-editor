@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Icon, Modal, Slider, InputNumber } from 'antd';
+import { Button, Icon, Modal, Slider, InputNumber, Divider, Checkbox } from 'antd';
 import { 
   MAX_CANVAS_PIXEL_SIZE, 
   MIN_CANVAS_PIXEL_SIZE, 
@@ -12,8 +12,6 @@ const MIN = 0.1;
 const MAX = 1;
 
 
-
-
 export interface HeaderProps{
   className?: string;
   style?: React.CSSProperties;
@@ -21,6 +19,19 @@ export interface HeaderProps{
 }
 
 export default class Header extends React.Component<HeaderProps> {
+
+  changeMode = e => {
+    const checked = e.target.checked;
+    const { layerController } = this.props;
+    
+    if (checked) {
+      layerController.setEditMode(CanvasEditMode.Crop);
+    } else {
+      layerController.setEditMode(CanvasEditMode.Pan);
+    }
+    this.forceUpdate();
+
+  }
 
   exportImage = () => {
     const { layerController } = this.props;
@@ -79,14 +90,11 @@ export default class Header extends React.Component<HeaderProps> {
     const [width, height] = layerController.getSize();
     const editMode = layerController.editMode;
     const loadEnable = editMode === CanvasEditMode.Pan;
-
-
-
+    const cropperParam = layerController.getCropperParam();
 
     
     return (
       <div className={styles.header}>
-        
         <Button 
           className={styles['btn']} 
           type="primary" 
@@ -98,19 +106,81 @@ export default class Header extends React.Component<HeaderProps> {
         <input ref="file" className={styles.file} type="file" accept="image" onChange={this.loadImage}/>
         <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成图片</Button>
 
+        
         <div className={styles['control']}>
-          <div className={styles['label']}>画布宽度:</div>
+
+          {/* <Checkbox className={styles['checkbox']}>是否裁剪</Checkbox> */}
+
+          <Checkbox 
+            className={styles['checkbox']}
+            checked={editMode === CanvasEditMode.Crop}
+            onChange={this.changeMode}
+          >
+            裁剪视图
+          </Checkbox>
+
+          <div className={styles['label']}>
+            裁剪x:
+          </div>
           <InputNumber 
-            className={styles['value']}
+            className={styles['inputNumber']}
+            step={1}
+            min={MIN_CANVAS_PIXEL_SIZE}
+            max={MAX_CANVAS_PIXEL_SIZE}
+            value={cropperParam.left}
+            // onChange={val => this.changeDimension('height', val)}
+          />
+
+          <div className={styles['label']}>
+            裁剪y:
+          </div>
+          <InputNumber 
+            className={styles['inputNumber']}
+            step={1}
+            min={MIN_CANVAS_PIXEL_SIZE}
+            max={MAX_CANVAS_PIXEL_SIZE}
+            value={cropperParam.top}
+            // onChange={val => this.changeDimension('height', val)}
+          />
+
+          <div className={styles['label']}>
+            裁剪宽:
+          </div>
+          <InputNumber 
+            className={styles['inputNumber']}
+            step={1}
+            min={MIN_CANVAS_PIXEL_SIZE}
+            max={MAX_CANVAS_PIXEL_SIZE}
+            value={cropperParam.width}
+            // onChange={val => this.changeDimension('height', val)}
+          />
+
+          <div className={styles['label']}>
+            裁剪高:
+          </div>
+          <InputNumber 
+            className={styles['inputNumber']}
+            step={1}
+            min={MIN_CANVAS_PIXEL_SIZE}
+            max={MAX_CANVAS_PIXEL_SIZE}
+            value={cropperParam.height}
+            // onChange={val => this.changeDimension('height', val)}
+          />
+
+
+          <Divider className={styles['divider']} type="vertical"/>
+          <div className={styles['label']}>画布宽:</div>
+          <InputNumber 
+            className={styles['inputNumber']}
             step={1}
             min={MIN_CANVAS_PIXEL_SIZE}
             max={MAX_CANVAS_PIXEL_SIZE}
             value={width}
             onChange={val => this.changeDimension('width', val)}
           />
-          <div className={styles['label']}>画布高度:</div>
+          <div className={styles['label']}>画布高:</div>
           <InputNumber 
-            className={styles['value']}
+            className={styles['inputNumber']}
             step={1}
             min={MIN_CANVAS_PIXEL_SIZE}
             max={MAX_CANVAS_PIXEL_SIZE}
@@ -127,7 +197,10 @@ export default class Header extends React.Component<HeaderProps> {
             value={zoom * PERCENT}
           />
           <div className={styles['percent']}>{`${parseInt(zoom * PERCENT as any)} %`}</div>
+
+
         </div>
+        
 
       </div>
     )
