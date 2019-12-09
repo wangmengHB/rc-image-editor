@@ -5,13 +5,14 @@ import {
   MIN_CANVAS_PIXEL_SIZE, 
   CanvasEditMode,
 } from '../../const';
+import styles from './index.module.less';
 
 const PERCENT = 100;
 const MIN = 0.1;
 const MAX = 1;
 
 
-const styles = require('./index.module.less');
+
 
 export interface HeaderProps{
   className?: string;

@@ -11,44 +11,36 @@ export interface FilterPanelProps{
   className?: string;
   style?: React.CSSProperties;
   layerController: any;
-  onToggle: Function;
+  item: any;
 }
 
 
 export default class FilterPanel extends React.Component<FilterPanelProps>{
-  toggle = () => {
-    const { onToggle } = this.props;
-    if (typeof onToggle === 'function') {
-      onToggle();
-    }
-  }
-
-
+  
   onFilterChange = (type, val) => {
-    const { layerController } = this.props;
-    const target = layerController.getActiveObject();
-    if (!target || target.type !== 'image') {
+    const { layerController, item } = this.props;
+    
+    if (!item || item.type !== 'image') {
       return message.error('请选择一个图层，再使用滤镜！');
     }
 
     if ( type === 'brightness') {
-      target.filters[0].brightness = val; 
+      item.filters[0].brightness = val; 
     }
 
     if (type === 'contrast') {
-      target.filters[1].contrast = val;
+      item.filters[1].contrast = val;
     }
 
     if (type === 'hue') {
-      target.filters[2].rotation = val;
+      item.filters[2].rotation = val;
     }
 
     if (type === 'saturation') {
-      target.filters[3].saturation = val;
+      item.filters[3].saturation = val;
     }
-
-
-    target.applyFilters();
+    
+    item.applyFilters();
     layerController.update();
   }
 
@@ -90,18 +82,16 @@ export default class FilterPanel extends React.Component<FilterPanelProps>{
 
 
   render() {
-    const { layerController } = this.props;
-    const editMode = layerController.editMode;
+    const { layerController, item } = this.props;
     let brightness = 0, contrast = 0, hue = 0, saturation = 0;
     let disabled = false;
-    const target = layerController.getActiveObject();
     
-    if (target && target.type === 'image' && target.filters.length >= 4) {
+    if (item && item.type === 'image' && item.filters.length >= 4) {
       // todo get param from target
-      brightness = target.filters[0].brightness;
-      contrast = target.filters[1].contrast;
-      hue = target.filters[2].rotation;
-      saturation = target.filters[3].saturation;
+      brightness = item.filters[0].brightness;
+      contrast = item.filters[1].contrast;
+      hue = item.filters[2].rotation;
+      saturation = item.filters[3].saturation;
     } else {
       disabled = true;
     }
@@ -109,11 +99,6 @@ export default class FilterPanel extends React.Component<FilterPanelProps>{
     
     return (
       <div className={styles['filter-panel']}>
-        <div className={styles['tool-header']}>
-          <a onClick={this.toggle}><Icon type="arrow-left"/>收起</a>
-          <span className={styles['tool-title']}>滤镜</span>
-        </div>
-        <span><Icon type="info-circle" />请先选择图层</span>
         { this.createFilterItem('亮度', 'brightness', brightness, disabled) }
         { this.createFilterItem('对比度', 'contrast', contrast, disabled) }
         { this.createFilterItem('色调', 'hue', hue, disabled) }

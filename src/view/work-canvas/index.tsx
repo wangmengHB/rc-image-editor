@@ -2,7 +2,7 @@ import * as React from 'react';
 import classnames from 'classnames';
 import {fabric} from 'fabric';
 import { CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT } from '../../const'
-const styles = require('./index.module.less');
+import styles from './index.module.less';
 
 (window as any)._fabric = fabric;
 console.log(Object.keys(fabric.Image.filters));

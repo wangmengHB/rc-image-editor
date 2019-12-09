@@ -6,8 +6,7 @@ import ToolPanel from './tool-panel';
 import WorkCanvas from './work-canvas';
 import LayerController from '../controller/LayerController';
 import classnames from 'classnames';
-const styles = require('./index.module.less');
-
+import styles from './index.module.less';
 
 
 export interface ImageEditorProps{
@@ -16,13 +15,11 @@ export interface ImageEditorProps{
 }
 
 
-
 export default class ImageEditorView extends React.Component<ImageEditorProps> {
 
   state = {
     layerController: new LayerController(this),
   }
-
 
   render() {
     const { className, style } = this.props;

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Icon, Menu, InputNumber,  Slider, message} from 'antd';
 import classnames from 'classnames';
 import { CanvasEditMode } from '../../const';
-const styles = require('./index.module.less');
+import styles from './index.module.less';
 import FilterPanel from './filter-panel';
 import CropperPanel from './cropper-panel';
 

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Icon, Menu, InputNumber,  Slider, message, Button} from 'antd';
 import classnames from 'classnames';
 import { CanvasEditMode } from '../../const';
-const styles = require('./index.module.less');
+import styles from './index.module.less';
 
 
 export interface CropperPanelProps{

@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "allowSyntheticDefaultImports": true, 
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true, 
     "skipLibCheck": true,
     "strictNullChecks": false,
     "moduleResolution": "node",

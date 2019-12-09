@@ -23,57 +23,17 @@
     overflow-y: auto;
     
 
-    .actionBtn{
-      font-size: 10px;
-      height: 20px;
-    }
-
-    .action{
-      margin: 5px 0;
-    }
-
-    .param-item{
-
-      display: inline-block;
-      margin: 5px 0;
-      width: 48%;
-
-      &:nth-child(2n + 1) {
-        margin-right: 4%;
-      }
-
-      .label {   
-        display: inline-block;
-        width: 40px;
-      }
-  
-      .value {
-        
-        display: inline-block;
-        width: 60px;
-        font-size: 10px;
-        height: 20px;
-        line-height: 20px;     
-        padding: 0 2px;
-  
-        :global(.ant-input-number-input) {
-          height: 20px;
-          padding: 0;
-        }
-      }
-
-    }
+    
 
     
     
 
     .item {
-      padding: 10px;
+      padding: 10px 5px;
       width: 100%;
-      
       background: rgba(125,125,125,0.5);
-      margin-bottom: 5px;
-
+      border: solid 1px rgba(0,0,0,0.1);
+      
       &.active {
         border: 3px solid red;
         background: #fff;
@@ -84,7 +44,6 @@
 
     .preview{
       display: flex;
-
     }
 
     .thunb-container{
@@ -111,6 +70,98 @@
       
     }
 
+    
+  }
+
+}
+
+.action{
+  margin: 5px 0;
+  
+
+  .actionBtn{
+    font-size: 10px;
+    height: 20px;
+    line-height: 20px;
+    margin-right: 3px;
+    width: 40px;
+    padding: 0;
+  
+    &:last-child{
+      margin: 0;
+    }
+
+    :global(.ant-btn) {
+      height: 20px;
+      line-height: 20px;
+      padding: 0;
+      width: 40px;
+    }
+  }
+}
+
+.filter-panel{
+
+  .filterItem{
+    margin-bottom: 20px;
+    .label {
+      padding: 0 0px;
+      height: 30px;
+      line-height: 30px;
+      .inputNumber{
+        float: right;
+        width: 50px;
+        padding: 0;
+        height: 30px;
+        line-height: 30px;;
+
+        :global(.ant-input-number-input) {
+          height: 20px;
+          padding: 0 0 0 3px;
+        }
+      }    
+    }
+
+    .slider{
+      margin: 10px 0;
+      width: 100%;
+    }
+
+  }
+
+}
+
+.param-control{
+
+  .param-item{
+
+    display: inline-block;
+    margin: 5px 0;
+    width: 48%;
+
+    &:nth-child(2n + 1) {
+      margin-right: 4%;
+    }
+
+    .label {   
+      display: inline-block;
+      width: 40px;
+    }
+
+    .value {
+      
+      display: inline-block;
+      width: 60px;
+      font-size: 10px;
+      height: 20px;
+      line-height: 20px;     
+      padding: 0 2px;
+
+      :global(.ant-input-number-input) {
+        height: 20px;
+        padding: 0;
+      }
+    }
     
   }
 
