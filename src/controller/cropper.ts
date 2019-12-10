@@ -40,6 +40,7 @@ export default class Crop {
       cornerStrokeColor: "#000",
       cornerColor: "#aaaaaa",
     });
+    this.cropzone.perPixelTargetFind = true;
 
     (window as any)._cropzone = this.cropzone;
 
@@ -62,6 +63,7 @@ export default class Crop {
     });
     this.fCanvas.discardActiveObject();
     this.fCanvas.add(this.cropzone);
+    this.cropzone.perPixelTargetFind = false;
     this.cropzone.set({ selectable: true});
     this.fCanvas.setActiveObject(this.cropzone);
     this.fCanvas.on('selection:cleared', this.alwaysShowCropzone);  
@@ -75,7 +77,7 @@ export default class Crop {
       // {@link http://fabricjs.com/docs/fabric.Object.html#evented}
       obj.evented = true;
     });
-
+    this.cropzone.perPixelTargetFind = true;
     this.fCanvas.discardActiveObject();
     this.cropzone.bringToFront();
     this.cropzone.set({ selectable: false});

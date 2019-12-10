@@ -28,7 +28,6 @@ export default class Layer extends React.Component<LayerProps>{
     if (viewMode === ViewMode.Normal) {
       layerController.setActiveObject(item);
     }
-
     
   }
 

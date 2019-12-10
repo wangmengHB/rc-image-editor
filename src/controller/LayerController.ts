@@ -47,7 +47,7 @@ export default class LayerController {
       containerClass: 'image-editor-canvas-container',
     });
     
-    this.fCanvas.on('selected', () => {
+    this.fCanvas.on('item:selected', () => {
       console.log('canvas selected');
       this.update();
     });
@@ -95,6 +95,7 @@ export default class LayerController {
       saturationFilter,
     ];
     this.fCanvas.add(oImg);
+    
 
     if (this.cropped) {
       this.addCropzone();
@@ -180,7 +181,7 @@ export default class LayerController {
   setActiveObject(item) {
     this.fCanvas.discardActiveObject();
     this.fCanvas.setActiveObject(item);
-    this.fCanvas.renderAll();
+    this.update();
   }
 
 
