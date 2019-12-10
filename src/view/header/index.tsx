@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Button, Icon, Modal, Slider, InputNumber, Divider, Checkbox } from 'antd';
+import { Button, Modal, Slider, InputNumber, Divider, Checkbox } from 'antd';
 import { 
-  MAX_CANVAS_PIXEL_SIZE, 
+  MAX_CANVAS_PIXEL_SIZE, MAX_POS_VAL, MIN_POS_VAL,
   MIN_CANVAS_PIXEL_SIZE, 
   ViewMode,
 } from '../../const';
@@ -104,9 +104,6 @@ export default class Header extends React.Component<HeaderProps> {
     const loadEnable = viewMode === ViewMode.Normal;
     const cropperParam = layerController.getCropperParam();
     const { forceCrop, cropped } = layerController;
-
-
-
     
     return (
       <div className={classnames([styles.header, className])} style={style}>
@@ -156,8 +153,8 @@ export default class Header extends React.Component<HeaderProps> {
               <InputNumber 
                 className={styles['inputNumber']}
                 step={1}
-                min={MIN_CANVAS_PIXEL_SIZE}
-                max={MAX_CANVAS_PIXEL_SIZE}
+                min={MIN_POS_VAL}
+                max={MAX_POS_VAL}
                 value={cropperParam.left}
                 onChange={val => this.setCropperParam('left', val)}
               />
@@ -167,8 +164,8 @@ export default class Header extends React.Component<HeaderProps> {
               <InputNumber 
                 className={styles['inputNumber']}
                 step={1}
-                min={MIN_CANVAS_PIXEL_SIZE}
-                max={MAX_CANVAS_PIXEL_SIZE}
+                min={MIN_POS_VAL}
+                max={MAX_POS_VAL}
                 value={cropperParam.top}
                 onChange={val => this.setCropperParam('top', val)}
               />

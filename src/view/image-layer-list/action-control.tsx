@@ -98,7 +98,8 @@ export default class ActionControl extends React.Component<ActionControlProps> {
         <Tooltip title="图层画笔功能正在开发中。。。">
           <Button 
             className={styles['actionBtn']}
-            disabled={!isActive} 
+            // disabled={!isActive} 
+            disabled
           >
             <Icon type="edit" theme="filled" />
           </Button>

@@ -24,9 +24,13 @@ export default class LayerController {
   cropper: Cropper;
   cropzone: any = null;
 
+  // tmp cache cropzone left/top;
+
   // config
   forceCrop: boolean = true;
   cropped: boolean = true;
+  lockUniScaling: boolean = true;
+  
 
 
   constructor(cmp: any, config: any) {
@@ -74,6 +78,7 @@ export default class LayerController {
       this.addCropzone();
     } else {
       this.setViewMode(ViewMode.Normal);
+      // remove action will lose left/top pos
       this.fCanvas.remove(this.cropper.cropzone);
     }
     this.update();
@@ -83,20 +88,19 @@ export default class LayerController {
   addImage(imageEle, filename) {
     const uid = generateUuid();
 
-    const oImg = new fabric.Image(imageEle, { name: filename, uid: uid});   
-    const brightnessFilter = new fabric.Image.filters.Brightness({brightness: 0});
-    const contrastFilter = new fabric.Image.filters.Contrast({contrast: 0});
-    const hueFilter = new fabric.Image.filters.HueRotation({rotation: 0});
-    const saturationFilter = new fabric.Image.filters.Saturation({saturation: 0});
+    const oImg = new fabric.Image(imageEle, { 
+      name: filename, 
+      uid: uid,
+      lockUniScaling: this.lockUniScaling,
+    });
     oImg.filters = [
-      brightnessFilter,
-      contrastFilter,
-      hueFilter,
-      saturationFilter,
+      new fabric.Image.filters.Brightness({brightness: 0}),
+      new fabric.Image.filters.Contrast({contrast: 0}),
+      new fabric.Image.filters.HueRotation({rotation: 0}),
+      new fabric.Image.filters.Saturation({saturation: 0}),   
     ];
     this.fCanvas.add(oImg);
     
-
     if (this.cropped) {
       this.addCropzone();
     }
@@ -111,10 +115,10 @@ export default class LayerController {
     if (objs.length === 0) {
       return;
     }
-    // suppose cropper is a rect or a group
-    // todo: need to self defined a shape
+    
     const cropzone = objs.find(item => item === this.cropper.cropzone);
     if (!cropzone) {
+      // todo recover previor left / top for cropzone
       this.fCanvas.add(this.cropper.cropzone);
     }  
     if (this.viewMode === ViewMode.Crop) {

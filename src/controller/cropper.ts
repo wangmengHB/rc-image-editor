@@ -4,6 +4,9 @@ import {
 } from '../const';
 import { fabric } from 'fabric';
 import { numbers, arrays } from 'util-kit';
+// import COVER from '../../assets/cover.jpg';
+
+
 
 const { mapArrayOrNot } = arrays;
 
@@ -11,38 +14,38 @@ const { mapArrayOrNot } = arrays;
 export default class Crop {
 
   fCanvas: any;
-
-  width: 0;
-
-  height: 0;
-
   cropzone: any = null;
 
 
   constructor(fCanvas) {
     this.fCanvas = fCanvas;
-    this.width = fCanvas.getWidth();
-    this.height = fCanvas.getHeight();
+    this.cropzone = new fabric.Group([]);
+    this.cropzone.perPixelTargetFind = true;
+    this.cropzone.lockRotation = true;
 
-    this.cropzone = new fabric.Rect({
-      left: 20,
-      top: 20,
-      width: this.width - 40,
-      height: this.height - 40,
+    (window as any)._cropzone = this.cropzone;
+    
+    const rect = new fabric.Rect({    
+      width: this.fCanvas.getWidth() - 40,
+      height: this.fCanvas.getHeight() - 40,
       fill: 'transparent',
       hasRotatingPoint: false,
       hasBorders: true,
       lockScalingFlip: true,
       lockRotation: true,
-      strokeWidth: 5,
+      strokeWidth: 4,
       stroke: 'rgba(255,0,0,1)',
       cornerSize: 24,
       cornerStrokeColor: "#000",
       cornerColor: "#aaaaaa",
     });
-    this.cropzone.perPixelTargetFind = true;
+    
 
-    (window as any)._cropzone = this.cropzone;
+    // fabric.Image.fromURL(COVER, (oImg) => {
+    //   this.cropzone.addWithUpdate(oImg);
+    // });
+
+    this.cropzone.addWithUpdate(rect);
 
   }
 
@@ -53,7 +56,6 @@ export default class Crop {
       this.fCanvas.setActiveObject(this.cropzone);
     }     
   }
-
 
   activeCropView() {
     this.fCanvas.remove(this.cropzone);
@@ -97,15 +99,18 @@ export default class Crop {
 
   setCropperParam(type, val) {
     const { left, top, width, height } = this.getCropperParam();
-    this.cropzone.set({
-      left, top, width, height, [type]: val
+    const dim = { left, top, width, height, [type]: val };
+    this.cropzone.set(dim);
+    this.cropzone.scale(1);  
+    this.cropzone.forEachObject(item => {
+      item.set({left: -dim.width/2, top: -dim.height/2, width: dim.width, height: dim.height});
+      item.scale(1);
     });
-    this.cropzone.scale(1);
+    
   }
 
   
 
 
-
-
 }
+
