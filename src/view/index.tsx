@@ -1,7 +1,6 @@
 import * as React from 'react';
 import Header from './header';
 import ImageLayerList from './image-layer-list';
-import ToolPanel from './tool-panel';
 import WorkCanvas from './work-canvas';
 import LayerController from '../controller/LayerController';
 import classnames from 'classnames';

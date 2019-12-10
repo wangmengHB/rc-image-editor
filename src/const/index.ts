@@ -36,10 +36,8 @@ export enum Direction {
 }
 
 export enum ViewMode {
-  Pan = 'pan',
-  Filter = 'filter',
+  Normal = 'normal',
   Crop = 'crop',
-  Pencil = 'pencil',
 }
 
 export const KEY_CODES = {

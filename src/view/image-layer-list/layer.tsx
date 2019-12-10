@@ -25,7 +25,7 @@ export default class Layer extends React.Component<LayerProps>{
     e.preventDefault();
     e.stopPropagation();
 
-    if (viewMode === ViewMode.Pan || viewMode === ViewMode.Filter) {
+    if (viewMode === ViewMode.Normal) {
       layerController.setActiveObject(item);
     }
 

@@ -3,7 +3,8 @@
 
 export interface ImageEditorConfig {
 
-  forceCrop: boolean;
+  forceCrop?: boolean;
+  
   
 
 

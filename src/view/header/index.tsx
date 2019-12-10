@@ -27,11 +27,16 @@ export default class Header extends React.Component<HeaderProps> {
     const checked = e.target.checked;
     const { layerController } = this.props;  
     if (checked) {
-      layerController.setEditMode(ViewMode.Crop);
+      layerController.setViewMode(ViewMode.Crop);
     } else {
-      layerController.setEditMode(ViewMode.Pan);
+      layerController.setViewMode(ViewMode.Normal);
     }
-    this.forceUpdate();
+  }
+
+  enableCropper = e => {
+    const checked = e.target.checked;
+    const { layerController } = this.props;
+    layerController.enableCropper(checked);
   }
 
   setCropperParam = (type, val) => {
@@ -96,8 +101,11 @@ export default class Header extends React.Component<HeaderProps> {
     }
     const [width, height] = layerController.getSize();
     const viewMode = layerController.viewMode;
-    const loadEnable = viewMode === ViewMode.Pan;
+    const loadEnable = viewMode === ViewMode.Normal;
     const cropperParam = layerController.getCropperParam();
+    const { forceCrop, cropped } = layerController;
+
+
 
     
     return (
@@ -120,11 +128,19 @@ export default class Header extends React.Component<HeaderProps> {
 
           <div className={styles['column-item']}>
             <div className={styles['sub-item']}>
-              <Checkbox className={styles['checkbox']} checked disabled>是否裁剪</Checkbox>
+              <Checkbox 
+                className={styles['checkbox']} 
+                checked={cropped} 
+                disabled={forceCrop}
+                onChange={this.enableCropper}
+              >
+                是否裁剪
+              </Checkbox>
             </div>
             <div className={styles['sub-item']}>
               <Checkbox 
                 className={styles['checkbox']}
+                disabled={!cropped}
                 checked={viewMode === ViewMode.Crop}
                 onChange={this.changeMode}
               >

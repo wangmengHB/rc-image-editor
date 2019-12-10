@@ -27,8 +27,8 @@ export default class Crop {
     this.cropzone = new fabric.Rect({
       left: 20,
       top: 20,
-      width: 600,
-      height: 600,
+      width: this.width - 40,
+      height: this.height - 40,
       fill: 'transparent',
       hasRotatingPoint: false,
       hasBorders: true,
@@ -54,17 +54,12 @@ export default class Crop {
   }
 
 
-  start() {
-
-  
+  activeCropView() {
     this.fCanvas.remove(this.cropzone);
-    this.fCanvas.selection = false;
-
     this.fCanvas.forEachObject(function (obj) {
       // {@link http://fabricjs.com/docs/fabric.Object.html#evented}
       obj.evented = false;
     });
-
     this.fCanvas.discardActiveObject();
     this.fCanvas.add(this.cropzone);
     this.cropzone.set({ selectable: true});
@@ -73,11 +68,8 @@ export default class Crop {
     this.fCanvas.renderAll();
   }
 
-  end() {
-    
+  activeNormalView() {
     this.fCanvas.off('selection:cleared', this.alwaysShowCropzone);
-    
-    this.fCanvas.selection = true;
     this.fCanvas.defaultCursor = 'default';
     this.fCanvas.forEachObject(function (obj) {
       // {@link http://fabricjs.com/docs/fabric.Object.html#evented}
@@ -85,7 +77,7 @@ export default class Crop {
     });
 
     this.fCanvas.discardActiveObject();
-
+    this.cropzone.bringToFront();
     this.cropzone.set({ selectable: false});
     this.fCanvas.renderAll();  
   }
