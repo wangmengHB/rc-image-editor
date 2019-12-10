@@ -11,11 +11,16 @@ document.body.appendChild(root);
 
 
 
+const config = {
+  forceCrop: true,
+
+}
+
 
 
 
 
 ReactDOM.render(
-  <ImageEditorView style={{ height: 700}}/>,
+  <ImageEditorView style={{ height: 700}} config={config}/>,
   root
 )

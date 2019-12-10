@@ -6,19 +6,35 @@ import WorkCanvas from './work-canvas';
 import LayerController from '../controller/LayerController';
 import classnames from 'classnames';
 import styles from './index.module.less';
+import { ImageEditorConfig } from '../interface';
 
 
-export interface ImageEditorProps{
+
+export interface ImageEditorProps {
   className?: string;
   style?: React.CSSProperties;
+  config: ImageEditorConfig;
+}
+
+export interface ImageEditorState {
+  layerController: LayerController;
 }
 
 
-export default class ImageEditorView extends React.Component<ImageEditorProps> {
+export default class ImageEditorView extends React.Component<ImageEditorProps, ImageEditorState> {
 
-  state = {
-    layerController: new LayerController(this),
+  
+
+  constructor(props: ImageEditorProps) {
+    super(props);
+    const { config } = props;
+
+    this.state = {
+      layerController: new LayerController(this, config),
+    }
   }
+
+
 
   render() {
     const { className, style } = this.props;

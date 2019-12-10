@@ -1,7 +1,7 @@
 import * as React from 'react';
 import classnames from 'classnames';
 import { Icon, Button, Input, InputNumber } from 'antd';
-import { Direction, MIN_SCALE, MIN_POS_VAL, MAX_POS_VAL, CanvasEditMode } from '../../const';
+import { Direction, MIN_SCALE, MIN_POS_VAL, MAX_POS_VAL, ViewMode } from '../../const';
 import styles from './index.module.less';
 import Layer from './layer';
 

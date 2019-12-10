@@ -30,15 +30,12 @@ export const CROP_STYLE = Object.freeze({
 });
 
 
-
-
-
 export enum Direction {
   Up = 'up',
   Down = 'down',
 }
 
-export enum CanvasEditMode {
+export enum ViewMode {
   Pan = 'pan',
   Filter = 'filter',
   Crop = 'crop',

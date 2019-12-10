@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Icon, Menu, InputNumber,  Slider, message} from 'antd';
 import classnames from 'classnames';
-import { CanvasEditMode } from '../../const';
+import { ViewMode } from '../../const';
 import styles from './index.module.less';
 import FilterPanel from './filter-panel';
 import CropperPanel from './cropper-panel';
@@ -25,12 +25,12 @@ export default class ToolPanel extends React.Component<ToolPanelProps> {
     const { layerController } = this.props;
     const { filterPanelVisible, cropperPanelVisible } = this.state;
     layerController.setEditMode(key);
-    if (key === CanvasEditMode.Filter) {
+    if (key === ViewMode.Filter) {
       this.setState({filterPanelVisible: !filterPanelVisible})
     } else {
       this.setState({filterPanelVisible: false});
     }
-    if (key === CanvasEditMode.Crop) {
+    if (key === ViewMode.Crop) {
       this.setState({cropperPanelVisible: !cropperPanelVisible});
     } else {
       this.setState({cropperPanelVisible: false});
@@ -41,7 +41,7 @@ export default class ToolPanel extends React.Component<ToolPanelProps> {
   render() {
     const { className, style, layerController } = this.props;
     const { filterPanelVisible, cropperPanelVisible } = this.state;
-    const editMode = layerController.editMode;
+    const viewMode = layerController.viewMode;
     
     return (
       <div 
@@ -49,30 +49,30 @@ export default class ToolPanel extends React.Component<ToolPanelProps> {
         style={style}
       >
         <Menu className={styles['menu']} onClick={this.changeMode}>
-          <Menu.Item key={CanvasEditMode.Pan}>
+          <Menu.Item key={ViewMode.Pan}>
             <a 
-              className={classnames({[styles['active']]: editMode === CanvasEditMode.Pan})}
+              className={classnames({[styles['active']]: viewMode === ViewMode.Pan})}
             >
               移动
             </a>
           </Menu.Item>
-          <Menu.Item key={CanvasEditMode.Filter}>
+          <Menu.Item key={ViewMode.Filter}>
             <a
-              className={classnames({[styles['active']]: editMode === CanvasEditMode.Filter})}
+              className={classnames({[styles['active']]: viewMode === ViewMode.Filter})}
             >
               滤镜
             </a>
           </Menu.Item>
-          <Menu.Item key={CanvasEditMode.Crop}>
+          <Menu.Item key={ViewMode.Crop}>
             <a
-              className={classnames({[styles['active']]: editMode === CanvasEditMode.Crop})}
+              className={classnames({[styles['active']]: viewMode === ViewMode.Crop})}
             >
               裁剪
             </a>
           </Menu.Item>
-          {/* <Menu.Item key={CanvasEditMode.Pencil}>
+          {/* <Menu.Item key={ViewMode.Pencil}>
             <a
-              className={classnames({[styles['active']]: editMode === CanvasEditMode.Pencil})}
+              className={classnames({[styles['active']]: viewMode === ViewMode.Pencil})}
             >
               画笔
             </a>
@@ -80,19 +80,19 @@ export default class ToolPanel extends React.Component<ToolPanelProps> {
         </Menu>
 
         {
-          editMode === CanvasEditMode.Filter && filterPanelVisible? (
+          viewMode === ViewMode.Filter && filterPanelVisible? (
             <FilterPanel 
               layerController={layerController}
-              onToggle={() => this.changeMode({key: CanvasEditMode.Filter})}
+              onToggle={() => this.changeMode({key: ViewMode.Filter})}
             />
           ): null
         }
 
         {
-          editMode === CanvasEditMode.Crop && cropperPanelVisible? (
+          viewMode === ViewMode.Crop && cropperPanelVisible? (
             <CropperPanel 
               layerController={layerController} 
-              onToggle={() => this.changeMode({key: CanvasEditMode.Crop})}
+              onToggle={() => this.changeMode({key: ViewMode.Crop})}
             />
           ): null
         }

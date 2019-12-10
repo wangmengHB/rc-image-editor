@@ -1,6 +1,6 @@
 import { 
   CANVAS_MAX_WIDTH, CANVAS_MAX_HEIGHT, CROP_STYLE,
-  CanvasEditMode, CANVAS_PADDING, CROP_ZONE_ID
+  ViewMode, CANVAS_PADDING, CROP_ZONE_ID
 } from '../const';
 import { fabric } from 'fabric';
 import { numbers, arrays } from 'util-kit';
@@ -25,20 +25,20 @@ export default class Crop {
     this.height = fCanvas.getHeight();
 
     this.cropzone = new fabric.Rect({
-      id: CROP_ZONE_ID,
       left: 20,
       top: 20,
-      width: this.width - 40,
-      height: this.height - 40,
+      width: 600,
+      height: 600,
       fill: 'transparent',
       hasRotatingPoint: false,
       hasBorders: true,
       lockScalingFlip: true,
       lockRotation: true,
-      lineWidth: 10,
+      strokeWidth: 5,
+      stroke: 'rgba(255,0,0,1)',
       cornerSize: 24,
       cornerStrokeColor: "#000",
-      cornerColor: "#AAA",
+      cornerColor: "#aaaaaa",
     });
 
     (window as any)._cropzone = this.cropzone;
@@ -56,115 +56,58 @@ export default class Crop {
 
   start() {
 
+  
     this.fCanvas.remove(this.cropzone);
+    this.fCanvas.selection = false;
 
     this.fCanvas.forEachObject(function (obj) {
       // {@link http://fabricjs.com/docs/fabric.Object.html#evented}
       obj.evented = false;
     });
 
-    
-    // const totalWidth = this.fCanvas.getWidth();
-    // const totalHeight = this.fCanvas.getHeight();
-    // this.cropzone.set({
-    //   width: totalWidth,
-    //   height: totalHeight,
-    // });
-    // this.cropzone.scale(1);
-    // console.log('totalWidth', totalWidth);
-
-
-    
     this.fCanvas.discardActiveObject();
-    
-    
-
-    let presetRatio = 1.333;
-
-    
-
     this.fCanvas.add(this.cropzone);
+    this.cropzone.set({ selectable: true});
     this.fCanvas.setActiveObject(this.cropzone);
-
-    
-
-    this.fCanvas.on('selection:cleared', this.alwaysShowCropzone);
-
-    this.fCanvas.selection = false;
-
-
+    this.fCanvas.on('selection:cleared', this.alwaysShowCropzone);  
     this.fCanvas.renderAll();
-
-    
-
-
-
   }
 
   end() {
+    
     this.fCanvas.off('selection:cleared', this.alwaysShowCropzone);
-    this.fCanvas.remove(this.cropzone);
-
+    
     this.fCanvas.selection = true;
     this.fCanvas.defaultCursor = 'default';
     this.fCanvas.forEachObject(function (obj) {
       // {@link http://fabricjs.com/docs/fabric.Object.html#evented}
       obj.evented = true;
     });
-    
+
+    this.fCanvas.discardActiveObject();
+
+    this.cropzone.set({ selectable: false});
+    this.fCanvas.renderAll();  
   }
-
-
-  /**
-   * Set a cropzone square
-   * @param {number} presetRatio - preset ratio
-   * @returns {{left: number, top: number, width: number, height: number}}
-   * @private
-   */
-  _getPresetCropSizePosition(presetRatio) {
-    
-    const originalWidth = this.fCanvas.getWidth();
-    const originalHeight = this.fCanvas.getHeight();
-
-    const standardSize = (originalWidth >= originalHeight) ? originalWidth : originalHeight;
-    const getScale = (value, orignalValue) => (value > orignalValue) ? orignalValue / value : 1;
-
-    let width = standardSize * presetRatio;
-    let height = standardSize;
-
-    const scaleWidth = getScale(width, originalWidth);
-    [width, height] = mapArrayOrNot([width, height], sizeValue => sizeValue * scaleWidth) as number[];
-
-    const scaleHeight = getScale(height, originalHeight);
-    [width, height] = mapArrayOrNot([width, height], sizeValue => sizeValue * scaleHeight) as number[];
-
-    return {
-        top: (originalHeight - height) / 2,
-        left: (originalWidth - width) / 2,
-        width,
-        height
-    };
-  }
-
 
   getCropperParam() {
     const cropzone = this.cropzone;
     const { left, top, width, height, scaleX, scaleY} = cropzone;
-
     return {
       left: Math.floor(left),
       top: Math.floor(top),
       width: Math.floor(width * scaleX),
       height: Math.floor(height * scaleY),
     };
-
   }
 
-
-  doCropAction() {
-
+  setCropperParam(type, val) {
+    const { left, top, width, height } = this.getCropperParam();
+    this.cropzone.set({
+      left, top, width, height, [type]: val
+    });
+    this.cropzone.scale(1);
   }
-  
 
   
 

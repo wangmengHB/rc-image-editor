@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Icon, Menu, InputNumber,  Slider, message} from 'antd';
 import classnames from 'classnames';
-import { CanvasEditMode } from '../../const';
+import { ViewMode } from '../../const';
 import styles from './index.module.less';
 
 const PERCENT = 100;
@@ -39,7 +39,7 @@ export default class FilterPanel extends React.Component<FilterPanelProps>{
     if (type === 'saturation') {
       item.filters[3].saturation = val;
     }
-    
+
     item.applyFilters();
     layerController.update();
   }

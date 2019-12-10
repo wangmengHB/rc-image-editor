@@ -1,7 +1,7 @@
 import * as React from 'react';
 import classnames from 'classnames';
 import { Icon, Button, Input, InputNumber, Tooltip } from 'antd';
-import { Direction, MIN_SCALE, MIN_POS_VAL, MAX_POS_VAL, CanvasEditMode } from '../../const';
+import { Direction, MIN_SCALE, MIN_POS_VAL, MAX_POS_VAL, ViewMode } from '../../const';
 import styles from './index.module.less';
 import ActionControl from './action-control';
 import ParamControl from './param-control';
@@ -21,11 +21,11 @@ export default class Layer extends React.Component<LayerProps>{
 
   setActive = (item, e) => {
     const { layerController } = this.props;
-    const editMode = layerController.editMode;
+    const viewMode = layerController.viewMode;
     e.preventDefault();
     e.stopPropagation();
 
-    if (editMode === CanvasEditMode.Pan || editMode === CanvasEditMode.Filter) {
+    if (viewMode === ViewMode.Pan || viewMode === ViewMode.Filter) {
       layerController.setActiveObject(item);
     }
 

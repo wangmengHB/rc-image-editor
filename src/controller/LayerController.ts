@@ -1,23 +1,16 @@
 import { fabric } from 'fabric';
 import { 
   CANVAS_MAX_WIDTH, CANVAS_MAX_HEIGHT, CROP_STYLE,
-  CanvasEditMode, CANVAS_PADDING, 
+  ViewMode, CANVAS_PADDING, 
   CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, CROP_ZONE_ID,
 } from '../const';
 import { numbers, arrays, generateUuid, asyncs } from 'util-kit';
-import Cropzone from '../crop/cropzone';
 import Cropper from './cropper';
-const { timeout } = asyncs;
 
 
-const { mapArrayOrNot } = arrays;
-
-const DEFAULT_OPTION = {
-  top: -10,
-  left: -10,
-  height: 1,
-  width: 1
-};
+fabric.enableGLFiltering = true;
+fabric.Object.prototype.transparentCorners = false;
+fabric.Object.prototype.padding = 0;
 
 
 export default class LayerController {
@@ -28,26 +21,33 @@ export default class LayerController {
 
   scale: number = 1;
 
-  editMode: CanvasEditMode;
+  viewMode: ViewMode;
 
   cropper: Cropper;
 
   cropzone: any = null;
 
 
-  constructor(cmp: any) {
+  // config
+  forceCrop: boolean = true;
+
+
+  constructor(cmp: any, config: any) {
     this.cmp = cmp;
+    const { forceCrop } = config;
+
+    this.forceCrop = !!forceCrop;
+
     const node = document.createElement('canvas');
     node.width = CANVAS_INIT_WIDTH;
     node.height = CANVAS_INIT_HEIGHT;
-    fabric.enableGLFiltering = true;
+    
     this.fCanvas = new fabric.Canvas(node, {
       preserveObjectStacking: true,
       enableRetinaScaling: false,
       containerClass: 'image-editor-canvas-container',
     });
-    fabric.Object.prototype.transparentCorners = false;
-    fabric.Object.prototype.padding = 5;
+    
     this.fCanvas.on('selected', () => {
       console.log('canvas selected');
       this.update();
@@ -61,7 +61,7 @@ export default class LayerController {
     })
 
     this.cropper = new Cropper(this.fCanvas);
-    this.editMode = CanvasEditMode.Pan;
+    this.viewMode = ViewMode.Pan;
     (window as any)._c = this.fCanvas;
   }
 
@@ -86,19 +86,27 @@ export default class LayerController {
     ];
     oImg.on('selected', () => {
       console.log('image selected');
-      if (this.editMode === CanvasEditMode.Crop) {
+      if (this.viewMode === ViewMode.Crop) {
         return;
       }
-
       this.cmp.forceUpdate();
     });
-    oImg.on('mouse:up', () => {
-
-      // todo: throttle 
-      this.cmp.forceUpdate();
-    });
+    
     (window as any)._o = oImg;
     this.fCanvas.add(oImg);
+
+    // suppose cropper is a rect or a group
+    // todo: need to self defined a shape
+
+    const objs = this.fCanvas.getObjects();
+    let cropzone = objs.find(item => item === this.cropper.cropzone);
+    if (!cropzone) {
+      this.fCanvas.add(this.cropper.cropzone);
+      cropzone = this.cropper.cropzone;
+    }
+    cropzone.set({ selectable: false})
+    cropzone.bringToFront();
+    
     this._fitSize()
     this.update();
   }
@@ -165,14 +173,14 @@ export default class LayerController {
 
 
   setEditMode(mode) {
-    const prevMode = this.editMode;
+    const prevMode = this.viewMode;
     if (prevMode === mode) {
       return;
     }
 
-    this.editMode = mode;
+    this.viewMode = mode;
 
-    if (mode === CanvasEditMode.Crop) {
+    if (mode === ViewMode.Crop) {
       this.cropper.start();    
     } else {
       this.cropper.end();
@@ -212,38 +220,13 @@ export default class LayerController {
     return this.cropper.getCropperParam();
   }
 
-  setCropperParam() {
-    const cropzone = this.cropper.cropzone;
-  }
-
-
-  doCropAction() {
-    const { left, top, width, height } = this.cropper.getCropperParam();
-
-    this.fCanvas.forEachObject((obj) => {
-      const originLeft = obj.left;
-      const originTop = obj.top;
-
-      obj.set({
-        left: originLeft - left,
-        top: originTop - top,
-      })
-    })
-
-    this.fCanvas.setDimensions({
-      width: width,
-      height: height,
-    });
-
-    
-
+  setCropperParam(type, val) {
+    this.cropper.setCropperParam(type, val);
     this.update();
-
-    this.setScale(this.scale);
-    this.cropper.end();
-    this.cropper.start();
-
   }
+
+
+  
 
   exportImage() {
 
@@ -265,30 +248,32 @@ export default class LayerController {
       fCanvas.loadFromJSON(data, () => {
 
         // if need crop
+        if (this.forceCrop) {
+          const { left, top, width, height } = this.cropper.getCropperParam();
+          fCanvas.forEachObject((obj) => {
+            const originLeft = obj.left;
+            const originTop = obj.top;
 
-        const { left, top, width, height } = this.cropper.getCropperParam();
+            obj.set({
+              left: originLeft - left,
+              top: originTop - top,
+            })
+          });
 
-        fCanvas.forEachObject((obj) => {
-          const originLeft = obj.left;
-          const originTop = obj.top;
+          fCanvas.setDimensions({
+            width: width,
+            height: height,
+          });
 
-          obj.set({
-            left: originLeft - left,
-            top: originTop - top,
-          })
-        });
+          const objs = fCanvas.getObjects();   
+          const len = objs.length;
 
-        fCanvas.setDimensions({
-          width: width,
-          height: height,
-        });
-
-        const objs = fCanvas.getObjects();
-        const cropzone = objs.find(item => item.id === CROP_ZONE_ID);
-        if (cropzone) {
-          fCanvas.remove(cropzone);
+          // suppose last one is cropper object
+          if (len > 1) {
+            fCanvas.remove(objs[len - 1]);
+          }
         }
-        
+    
         const base64 = fCanvas.toDataURL();
         resolve(base64);
 

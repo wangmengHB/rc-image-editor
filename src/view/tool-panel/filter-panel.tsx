@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Icon, Menu, InputNumber,  Slider, message} from 'antd';
 import classnames from 'classnames';
-import { CanvasEditMode } from '../../const';
+import { ViewMode } from '../../const';
 import styles from './index.module.less';
 
 const PERCENT = 100;
@@ -91,7 +91,7 @@ export default class FilterPanel extends React.Component<FilterPanelProps>{
 
   render() {
     const { layerController } = this.props;
-    const editMode = layerController.editMode;
+    const viewMode = layerController.viewMode;
     let brightness = 0, contrast = 0, hue = 0, saturation = 0;
     let disabled = false;
     const target = layerController.getActiveObject();

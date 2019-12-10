@@ -3,7 +3,7 @@ import { Button, Icon, Modal, Slider, InputNumber, Divider, Checkbox } from 'ant
 import { 
   MAX_CANVAS_PIXEL_SIZE, 
   MIN_CANVAS_PIXEL_SIZE, 
-  CanvasEditMode,
+  ViewMode,
 } from '../../const';
 import styles from './index.module.less';
 import classnames from 'classnames';
@@ -25,16 +25,20 @@ export default class Header extends React.Component<HeaderProps> {
 
   changeMode = e => {
     const checked = e.target.checked;
-    const { layerController } = this.props;
-    
+    const { layerController } = this.props;  
     if (checked) {
-      layerController.setEditMode(CanvasEditMode.Crop);
+      layerController.setEditMode(ViewMode.Crop);
     } else {
-      layerController.setEditMode(CanvasEditMode.Pan);
+      layerController.setEditMode(ViewMode.Pan);
     }
     this.forceUpdate();
-
   }
+
+  setCropperParam = (type, val) => {
+    const { layerController } = this.props;
+    layerController.setCropperParam(type, val);
+  }
+
 
   exportImage = () => {
     const { layerController } = this.props;
@@ -91,8 +95,8 @@ export default class Header extends React.Component<HeaderProps> {
       zoom = 1;
     }
     const [width, height] = layerController.getSize();
-    const editMode = layerController.editMode;
-    const loadEnable = editMode === CanvasEditMode.Pan;
+    const viewMode = layerController.viewMode;
+    const loadEnable = viewMode === ViewMode.Pan;
     const cropperParam = layerController.getCropperParam();
 
     
@@ -121,7 +125,7 @@ export default class Header extends React.Component<HeaderProps> {
             <div className={styles['sub-item']}>
               <Checkbox 
                 className={styles['checkbox']}
-                checked={editMode === CanvasEditMode.Crop}
+                checked={viewMode === ViewMode.Crop}
                 onChange={this.changeMode}
               >
                 裁剪视图
@@ -139,7 +143,7 @@ export default class Header extends React.Component<HeaderProps> {
                 min={MIN_CANVAS_PIXEL_SIZE}
                 max={MAX_CANVAS_PIXEL_SIZE}
                 value={cropperParam.left}
-                // onChange={val => this.changeDimension('height', val)}
+                onChange={val => this.setCropperParam('left', val)}
               />
             </div>
             <div className={styles['param-item']}>
@@ -150,7 +154,7 @@ export default class Header extends React.Component<HeaderProps> {
                 min={MIN_CANVAS_PIXEL_SIZE}
                 max={MAX_CANVAS_PIXEL_SIZE}
                 value={cropperParam.top}
-                // onChange={val => this.changeDimension('height', val)}
+                onChange={val => this.setCropperParam('top', val)}
               />
             </div>
           </div>
@@ -166,7 +170,7 @@ export default class Header extends React.Component<HeaderProps> {
                 min={MIN_CANVAS_PIXEL_SIZE}
                 max={MAX_CANVAS_PIXEL_SIZE}
                 value={cropperParam.width}
-                // onChange={val => this.changeDimension('height', val)}
+                onChange={val => this.setCropperParam('width', val)}
               />
             </div>
 
@@ -180,7 +184,7 @@ export default class Header extends React.Component<HeaderProps> {
                 min={MIN_CANVAS_PIXEL_SIZE}
                 max={MAX_CANVAS_PIXEL_SIZE}
                 value={cropperParam.height}
-                // onChange={val => this.changeDimension('height', val)}
+                onChange={val => this.setCropperParam('height', val)}
               />
             </div>
           </div>
