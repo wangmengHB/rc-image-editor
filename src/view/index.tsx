@@ -1,4 +1,3 @@
-import 'antd/dist/antd.less';
 import * as React from 'react';
 import Header from './header';
 import ImageLayerList from './image-layer-list';
@@ -27,7 +26,7 @@ export default class ImageEditorView extends React.Component<ImageEditorProps> {
 
     return (
       <div className={classnames([styles['image-editor'], className])} style={style}>
-        <Header layerController={layerController}/>
+        <Header className={styles['header']} layerController={layerController}/>
         <div className={styles['main']}>
           <ImageLayerList 
             className={styles['image-list']}

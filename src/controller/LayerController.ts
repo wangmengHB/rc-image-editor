@@ -159,7 +159,8 @@ export default class LayerController {
 
   setActiveObject(item) {
     this.fCanvas.discardActiveObject();
-    this.fCanvas.setActiveObject(item)
+    this.fCanvas.setActiveObject(item);
+    this.fCanvas.renderAll();
   }
 
 

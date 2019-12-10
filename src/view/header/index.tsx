@@ -6,10 +6,13 @@ import {
   CanvasEditMode,
 } from '../../const';
 import styles from './index.module.less';
+import classnames from 'classnames';
 
 const PERCENT = 100;
 const MIN = 0.1;
 const MAX = 1;
+const PARAM_ITEM_WIDTH = 100;
+
 
 
 export interface HeaderProps{
@@ -82,7 +85,7 @@ export default class Header extends React.Component<HeaderProps> {
   }
 
   render() {    
-    const { layerController } = this.props;
+    const { layerController, className, style } = this.props;
     let zoom = layerController.scale;
     if (typeof zoom !== 'number') {
       zoom = 1;
@@ -94,7 +97,7 @@ export default class Header extends React.Component<HeaderProps> {
 
     
     return (
-      <div className={styles.header}>
+      <div className={classnames([styles.header, className])} style={style}>
         <Button 
           className={styles['btn']} 
           type="primary" 
@@ -109,86 +112,144 @@ export default class Header extends React.Component<HeaderProps> {
         
         <div className={styles['control']}>
 
-          {/* <Checkbox className={styles['checkbox']}>是否裁剪</Checkbox> */}
+          <Divider className={styles['divider']} type="vertical"/>
 
-          <Checkbox 
-            className={styles['checkbox']}
-            checked={editMode === CanvasEditMode.Crop}
-            onChange={this.changeMode}
-          >
-            裁剪视图
-          </Checkbox>
-
-          <div className={styles['label']}>
-            裁剪x:
+          <div className={styles['column-item']}>
+            <div className={styles['sub-item']}>
+              <Checkbox className={styles['checkbox']} checked disabled>是否裁剪</Checkbox>
+            </div>
+            <div className={styles['sub-item']}>
+              <Checkbox 
+                className={styles['checkbox']}
+                checked={editMode === CanvasEditMode.Crop}
+                onChange={this.changeMode}
+              >
+                裁剪视图
+              </Checkbox>
+            </div>
           </div>
-          <InputNumber 
-            className={styles['inputNumber']}
-            step={1}
-            min={MIN_CANVAS_PIXEL_SIZE}
-            max={MAX_CANVAS_PIXEL_SIZE}
-            value={cropperParam.left}
-            // onChange={val => this.changeDimension('height', val)}
-          />
 
-          <div className={styles['label']}>
-            裁剪y:
-          </div>
-          <InputNumber 
-            className={styles['inputNumber']}
-            step={1}
-            min={MIN_CANVAS_PIXEL_SIZE}
-            max={MAX_CANVAS_PIXEL_SIZE}
-            value={cropperParam.top}
-            // onChange={val => this.changeDimension('height', val)}
-          />
 
-          <div className={styles['label']}>
-            裁剪宽:
+          <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
+            <div className={styles['param-item']}>
+              <div className={styles['label']}>裁剪x:</div>
+              <InputNumber 
+                className={styles['inputNumber']}
+                step={1}
+                min={MIN_CANVAS_PIXEL_SIZE}
+                max={MAX_CANVAS_PIXEL_SIZE}
+                value={cropperParam.left}
+                // onChange={val => this.changeDimension('height', val)}
+              />
+            </div>
+            <div className={styles['param-item']}>
+              <div className={styles['label']}>裁剪y:</div>
+              <InputNumber 
+                className={styles['inputNumber']}
+                step={1}
+                min={MIN_CANVAS_PIXEL_SIZE}
+                max={MAX_CANVAS_PIXEL_SIZE}
+                value={cropperParam.top}
+                // onChange={val => this.changeDimension('height', val)}
+              />
+            </div>
           </div>
-          <InputNumber 
-            className={styles['inputNumber']}
-            step={1}
-            min={MIN_CANVAS_PIXEL_SIZE}
-            max={MAX_CANVAS_PIXEL_SIZE}
-            value={cropperParam.width}
-            // onChange={val => this.changeDimension('height', val)}
-          />
 
-          <div className={styles['label']}>
-            裁剪高:
+          <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
+
+            <div className={styles['param-item']}>
+            
+              <div className={styles['label']}>裁剪宽:</div>
+              <InputNumber 
+                className={styles['inputNumber']}
+                step={1}
+                min={MIN_CANVAS_PIXEL_SIZE}
+                max={MAX_CANVAS_PIXEL_SIZE}
+                value={cropperParam.width}
+                // onChange={val => this.changeDimension('height', val)}
+              />
+            </div>
+
+            <div className={styles['param-item']}>
+              <div className={styles['label']}>
+                裁剪高:
+              </div>
+              <InputNumber 
+                className={styles['inputNumber']}
+                step={1}
+                min={MIN_CANVAS_PIXEL_SIZE}
+                max={MAX_CANVAS_PIXEL_SIZE}
+                value={cropperParam.height}
+                // onChange={val => this.changeDimension('height', val)}
+              />
+            </div>
           </div>
-          <InputNumber 
-            className={styles['inputNumber']}
-            step={1}
-            min={MIN_CANVAS_PIXEL_SIZE}
-            max={MAX_CANVAS_PIXEL_SIZE}
-            value={cropperParam.height}
-            // onChange={val => this.changeDimension('height', val)}
-          />
+
+          <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
+
+            <div className={styles['param-item']}>
+            
+              <div className={styles['label']}>目标宽:</div>
+              <InputNumber 
+                className={styles['inputNumber']}
+                step={1}
+                min={MIN_CANVAS_PIXEL_SIZE}
+                max={MAX_CANVAS_PIXEL_SIZE}
+                value={cropperParam.width}
+                disabled
+                // onChange={val => this.changeDimension('height', val)}
+              />
+            </div>
+
+            <div className={styles['param-item']}>
+              <div className={styles['label']}>
+                目标高:
+              </div>
+              <InputNumber 
+                className={styles['inputNumber']}
+                step={1}
+                min={MIN_CANVAS_PIXEL_SIZE}
+                max={MAX_CANVAS_PIXEL_SIZE}
+                value={cropperParam.height}
+                disabled
+                // onChange={val => this.changeDimension('height', val)}
+              />
+            </div>
+          </div>
+
+          
 
 
           <Divider className={styles['divider']} type="vertical"/>
-          <div className={styles['label']}>画布宽:</div>
-          <InputNumber 
-            className={styles['inputNumber']}
-            step={1}
-            min={MIN_CANVAS_PIXEL_SIZE}
-            max={MAX_CANVAS_PIXEL_SIZE}
-            value={width}
-            onChange={val => this.changeDimension('width', val)}
-          />
-          <div className={styles['label']}>画布高:</div>
-          <InputNumber 
-            className={styles['inputNumber']}
-            step={1}
-            min={MIN_CANVAS_PIXEL_SIZE}
-            max={MAX_CANVAS_PIXEL_SIZE}
-            value={height}
-            onChange={val => this.changeDimension('height', val)}
-          />
 
-          <div className={styles['label']}>画布缩放:</div>
+          <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
+            <div className={styles['param-item']}>
+              <div className={styles['label']}>画布宽:</div>
+              <InputNumber 
+                className={styles['inputNumber']}
+                step={1}
+                min={MIN_CANVAS_PIXEL_SIZE}
+                max={MAX_CANVAS_PIXEL_SIZE}
+                value={width}
+                onChange={val => this.changeDimension('width', val)}
+              />
+            </div>
+            <div className={styles['param-item']}>
+              <div className={styles['label']}>画布高:</div>
+              <InputNumber 
+                className={styles['inputNumber']}
+                step={1}
+                min={MIN_CANVAS_PIXEL_SIZE}
+                max={MAX_CANVAS_PIXEL_SIZE}
+                value={height}
+                onChange={val => this.changeDimension('height', val)}
+              />
+              
+            </div>
+          </div>
+
+          
+          <div className={styles['label']} style={{marginLeft: 10}}>缩放:</div>
           <Slider
             className={styles['slider']}
             min={MIN * PERCENT}

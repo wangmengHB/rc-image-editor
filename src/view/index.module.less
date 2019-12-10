@@ -1,6 +1,7 @@
 
 @tool-panel-width: 0px;
 @image-layer-width: 240px;
+@header-height: 60px;
 @min-height: 550px;
 @min-width: 900px;
 
@@ -11,11 +12,16 @@
   height: @min-height;
   border: solid 1px rgba(0, 0, 0, 0.6);
   font-size: 10px; 
+
+  .header{
+    height: @header-height;
+    width: 100%;
+  }
   
   .main{
     position: relative;
     width: 100%;
-    height: calc(100% - 50px); 
+    height: ~"calc(100% - @{header-height})";; 
   }
 
   .image-list{
