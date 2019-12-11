@@ -22,7 +22,7 @@ export default class LayerController {
   scale: number = 1;
   viewMode: ViewMode;
   cropper: Cropper;
-  cropzone: any = null;
+  
 
   // tmp cache cropzone left/top;
 
@@ -36,6 +36,8 @@ export default class LayerController {
   constructor(cmp: any, config: any) {
     this.cmp = cmp;
     const { forceCrop } = config;
+
+    (window as any)._ctrl = this;
 
     this.forceCrop = !!forceCrop;
     this.cropped = this.forceCrop;
@@ -235,59 +237,59 @@ export default class LayerController {
     this.update();
   }
 
-
-  
-
   exportImage() {
 
     const canvasWidth = this.fCanvas.getWidth();
     const canvasHeight = this.fCanvas.getHeight();
     const canvas = document.createElement('canvas');
-    const fCanvas = new fabric.StaticCanvas(canvas, {
+    const tmpFCanvas = new fabric.StaticCanvas(canvas, {
       preserveObjectStacking: true,
       enableRetinaScaling: false,
     });
-    fCanvas.setDimensions({width: canvasWidth, height: canvasHeight});
+    tmpFCanvas.setDimensions({width: canvasWidth, height: canvasHeight});
 
-    (window as any).tmpC = fCanvas;
+    (window as any).tmpC = tmpFCanvas;
 
     const data = this.fCanvas.toJSON();
+    const len = data.objects.length;
+    // remove cropper object
+    if (this.cropped && len > 0) {
+      data.objects = data.objects.slice(0, len - 1);
+    }
 
     return new Promise((resolve, reject) => {
-    
-      fCanvas.loadFromJSON(data, () => {
-
-        // if need crop
-        if (this.cropped) {
-          const { left, top, width, height } = this.cropper.getCropperParam();
-          fCanvas.forEachObject((obj) => {
+      tmpFCanvas.loadFromJSON(data, () => {
+        let { left, top, width, height } = this.cropper.getCropperParam();    
+        if (this.cropped) {    
+          tmpFCanvas.forEachObject((obj) => {
             const originLeft = obj.left;
             const originTop = obj.top;
-
             obj.set({
               left: originLeft - left,
               top: originTop - top,
             })
           });
-
-          fCanvas.setDimensions({
+          tmpFCanvas.setDimensions({
             width: width,
             height: height,
           });
-
-          const objs = fCanvas.getObjects();   
-          const len = objs.length;
-
-          // suppose last one is cropper object
-          if (len > 1) {
-            fCanvas.remove(objs[len - 1]);
-          }
+        } else {
+          width = canvasWidth;
+          height = canvasHeight;
         }
     
-        const base64 = fCanvas.toDataURL();
-        resolve(base64);
-
-
+        tmpFCanvas.renderAll();
+        
+        // todo need to do sth to make everything is rendered
+        setTimeout(() => {
+          const base64 = tmpFCanvas.toDataURL();
+          resolve({
+            base64,
+            width,
+            height
+          });
+        }, 100);
+        
       });
 
     });

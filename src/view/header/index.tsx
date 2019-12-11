@@ -47,11 +47,16 @@ export default class Header extends React.Component<HeaderProps> {
 
   exportImage = () => {
     const { layerController } = this.props;
-    layerController.exportImage().then(base64 => {
+    layerController.exportImage().then(({base64, width, height}) => {
       Modal.confirm({
         title: '预览',
         width: 600,
-        content: (<img style={{maxWidth: 500, border: '1px solid red'}} src={base64}/>)
+        content: (
+          <div>
+            <div>图片尺寸: {`${width} * ${height}`}</div>
+            <img style={{maxWidth: 500, border: '1px solid black'}} src={base64}/>
+          </div>
+        )
       })
     });
     
