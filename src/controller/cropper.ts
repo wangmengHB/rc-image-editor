@@ -109,8 +109,5 @@ export default class Crop {
     
   }
 
-  
-
-
 }
 
