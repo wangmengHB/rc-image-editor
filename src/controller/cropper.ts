@@ -33,7 +33,7 @@ export default class Crop {
       hasBorders: true,
       lockScalingFlip: true,
       lockRotation: true,
-      strokeWidth: 4,
+      strokeWidth: 2,
       stroke: 'rgba(255,0,0,1)',
       cornerSize: 24,
       cornerStrokeColor: "#000",
