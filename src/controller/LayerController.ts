@@ -28,18 +28,23 @@ export default class LayerController {
 
   // config
   forceCrop: boolean = true;
-  cropped: boolean = true;
   lockUniScaling: boolean = true;
+
+
+  // whether apply crop
+  cropped: boolean = true;
   
 
 
   constructor(cmp: any, config: any) {
-    this.cmp = cmp;
-    const { forceCrop } = config;
-
     (window as any)._ctrl = this;
 
+    this.cmp = cmp;
+    const { forceCrop, lockUniScaling } = config;
+
     this.forceCrop = !!forceCrop;
+    this.lockUniScaling = !!lockUniScaling;
+
     this.cropped = this.forceCrop;
 
     const node = document.createElement('canvas');
@@ -106,8 +111,7 @@ export default class LayerController {
     if (this.cropped) {
       this.addCropzone();
     }
-
-    this._fitSize()
+    this._fitSize();
     this.update();
   }
 

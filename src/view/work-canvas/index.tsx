@@ -1,7 +1,6 @@
 import * as React from 'react';
 import classnames from 'classnames';
 import {fabric} from 'fabric';
-import { CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT } from '../../const'
 import styles from './index.module.less';
 
 (window as any)._fabric = fabric;
@@ -22,7 +21,6 @@ export default class CanvasSpace extends React.Component<CanvasSpaceProps> {
     if (!workspaceNode) {
       throw new Error('failed to get canvas element!');
     }
-    console.log(layerController.fCanvas);
     (workspaceNode as any).appendChild(layerController.fCanvas.wrapperEl);
     layerController.registerContainer(workspaceNode);
   }

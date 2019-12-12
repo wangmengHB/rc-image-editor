@@ -19,7 +19,7 @@ export default class Crop {
 
   constructor(fCanvas) {
     this.fCanvas = fCanvas;
-    this.cropzone = new fabric.Group([]);
+    this.cropzone = new fabric.Group([], {});
     this.cropzone.perPixelTargetFind = true;
     this.cropzone.lockRotation = true;
 
@@ -38,7 +38,31 @@ export default class Crop {
       cornerSize: 24,
       cornerStrokeColor: "#000",
       cornerColor: "#aaaaaa",
+      strokeUniform: true,
     });
+
+    // make sure scale to be 1
+    this.cropzone.on('modified', () => {
+      const w = this.cropzone.width * this.cropzone.scaleX;
+      const h = this.cropzone.height * this.cropzone.scaleY;
+      this.cropzone.forEachObject(item => {
+        item.set({
+          left: -w/2, 
+          top: -h/2, 
+          width: w, 
+          height: h,
+          scaleX: 1,
+          scaleY: 1,
+        });   
+      });
+      this.cropzone.set({
+        width: w,
+        height: h,
+        scaleX: 1,
+        scaleY: 1,
+      });
+      this.fCanvas.requestRenderAll();
+    })
     
 
     // fabric.Image.fromURL(COVER, (oImg) => {

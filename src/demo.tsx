@@ -12,10 +12,9 @@ document.body.appendChild(root);
 
 
 const config = {
-  forceCrop: true,
+  forceCrop: false,
 
 }
-
 
 
 
