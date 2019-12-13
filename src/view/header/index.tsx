@@ -108,7 +108,8 @@ export default class Header extends React.Component<HeaderProps> {
     const viewMode = layerController.viewMode;
     const loadEnable = viewMode === ViewMode.Normal;
     const cropperParam = layerController.getCropperParam();
-    const { forceCrop, cropped } = layerController;
+    const { cropped } = layerController;
+    const forceCrop = layerController.options.forceCrop;
     
     return (
       <div className={classnames([styles.header, className])} style={style}>

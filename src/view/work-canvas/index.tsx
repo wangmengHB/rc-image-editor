@@ -1,10 +1,6 @@
 import * as React from 'react';
 import classnames from 'classnames';
-import {fabric} from 'fabric';
 import styles from './index.module.less';
-
-(window as any)._fabric = fabric;
-console.log(Object.keys(fabric.Image.filters));
 
 export interface CanvasSpaceProps{
   className?: string;

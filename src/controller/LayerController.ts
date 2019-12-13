@@ -4,13 +4,14 @@ import {
   ViewMode, CANVAS_PADDING, 
   CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, CROP_ZONE_ID,
 } from '../const';
-import { numbers, arrays, generateUuid, asyncs } from 'util-kit';
+import { numbers, arrays, generateUuid, asyncs, objects } from 'util-kit';
+import { defaultOptions } from '../config/default';
 import Cropper from './cropper';
 
 
 fabric.enableGLFiltering = true;
 fabric.Object.prototype.transparentCorners = false;
-fabric.Object.prototype.padding = 0;
+fabric.Object.prototype.padding = 2;
 
 
 export default class LayerController {
@@ -27,10 +28,10 @@ export default class LayerController {
   // tmp cache cropzone left/top;
 
   // config
-  forceCrop: boolean = true;
-  lockUniScaling: boolean = true;
+  options: any = objects.deepClone(defaultOptions);
 
 
+  // state 
   // whether apply crop
   cropped: boolean = true;
   
@@ -40,12 +41,11 @@ export default class LayerController {
     (window as any)._ctrl = this;
 
     this.cmp = cmp;
-    const { forceCrop, lockUniScaling } = config;
+    
+    objects.mixin(this.options, config);
 
-    this.forceCrop = !!forceCrop;
-    this.lockUniScaling = !!lockUniScaling;
-
-    this.cropped = this.forceCrop;
+  
+    this.cropped = this.options.forceCrop;
 
     const node = document.createElement('canvas');
     node.width = CANVAS_INIT_WIDTH;
@@ -59,14 +59,12 @@ export default class LayerController {
     });
     
     this.fCanvas.on('item:selected', () => {
-      console.log('canvas selected');
-      this.update();
-    });
-    this.fCanvas.on('mouse:up', () => {
-      console.log('canvas mouse up');
+      console.log('item selected');
       this.cmp.forceUpdate();
     });
+    
     this.fCanvas.on('object:modified', () => {
+      console.log('object modified');
       this.cmp.forceUpdate();
     })
 
@@ -94,11 +92,10 @@ export default class LayerController {
 
   addImage(imageEle, filename) {
     const uid = generateUuid();
-
     const oImg = new fabric.Image(imageEle, { 
       name: filename, 
       uid: uid,
-      lockUniScaling: this.lockUniScaling,
+      lockUniScaling: this.options.ImageLockUniScaling,
     });
     oImg.filters = [
       new fabric.Image.filters.Brightness({brightness: 0}),
