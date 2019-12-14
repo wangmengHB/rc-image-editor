@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import 'antd/dist/antd.less';
 import * as ReactDOM from 'react-dom';
 import * as React from 'react';

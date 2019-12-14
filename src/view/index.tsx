@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Spin } from 'antd';
 import Header from './header';
 import ImageLayerList from './image-layer-list';
 import WorkCanvas from './work-canvas';
@@ -40,26 +41,28 @@ export default class ImageEditorView extends React.Component<ImageEditorProps, I
     const { layerController } = this.state;
 
     return (
-      <div className={classnames([styles['image-editor'], className])} style={style}>
-        <Header className={styles['header']} layerController={layerController}/>
-        <div className={styles['main']}>
-          <ImageLayerList 
-            className={styles['image-list']}
-            layerController={layerController} 
-          />
-          {/* <ToolPanel 
-            className={styles['tool-panel']}
-            layerController={layerController} 
-          /> */}
+      <Spin spinning={layerController.loading} tip="处理中...">
+        <div className={classnames([styles['image-editor'], className])} style={style}>
+          <Header className={styles['header']} layerController={layerController}/>
+          <div className={styles['main']}>
+            <ImageLayerList 
+              className={styles['image-list']}
+              layerController={layerController} 
+            />
+            {/* <ToolPanel 
+              className={styles['tool-panel']}
+              layerController={layerController} 
+            /> */}
 
-          <WorkCanvas 
-            className={styles['work-canvas']} 
-            layerController={layerController}
-          />
+            <WorkCanvas 
+              className={styles['work-canvas']} 
+              layerController={layerController}
+            />
+
+          </div>
 
         </div>
-
-      </div>
+      </Spin>
     )
 
   }

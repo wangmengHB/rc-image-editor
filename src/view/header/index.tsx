@@ -7,11 +7,16 @@ import {
 } from '../../const';
 import styles from './index.module.less';
 import classnames from 'classnames';
+import '../../mock/data';
+
 
 const PERCENT = 100;
 const MIN = 0.1;
 const MAX = 1;
 const PARAM_ITEM_WIDTH = 100;
+
+
+let test;
 
 
 
@@ -58,8 +63,19 @@ export default class Header extends React.Component<HeaderProps> {
           </div>
         )
       })
-    });
-    
+    });  
+  }
+
+  loadJSON = () => {
+    const { layerController } = this.props;
+    layerController.loadJSON( test || (window as any).mock1);
+
+  }
+
+  exportJSON = () => {
+    const { layerController } = this.props;
+    layerController.save();
+    test = layerController.toJSON(); 
   }
 
 
@@ -68,17 +84,9 @@ export default class Header extends React.Component<HeaderProps> {
     const reader = new FileReader();
     const filename = e.target.files[0].name;
     reader.onload = (e: any) => {
-      const base64: any = e.target.result;    
-      const image = new Image();
-      image.onload = () => {
-        const width = image.width;
-        const height = image.height;
-
-        console.log(filename, width, height);
-        layerController.addImage(image, filename, width, height);
-        (this.refs.file as any).value = null;
-      }
-      image.src = base64;
+      const base64: any = e.target.result;
+      layerController.addImage(base64, filename);
+      (this.refs.file as any).value = null;
     };
     reader.readAsDataURL(e.target.files[0]); 
   }
@@ -120,6 +128,22 @@ export default class Header extends React.Component<HeaderProps> {
           disabled={!loadEnable}
         >
           加载本地图片
+        </Button>
+        <Button 
+          className={styles['btn']} 
+          type="primary" 
+          onClick={this.loadJSON}
+          disabled={!loadEnable}
+        >
+          加载MOCK
+        </Button>
+        <Button 
+          className={styles['btn']} 
+          type="primary" 
+          onClick={this.exportJSON}
+          disabled={!loadEnable}
+        >
+          保存
         </Button>
         <input ref="file" className={styles.file} type="file" accept="image" onChange={this.loadImage}/>
         <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成图片</Button>

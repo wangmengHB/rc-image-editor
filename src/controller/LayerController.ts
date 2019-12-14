@@ -7,6 +7,7 @@ import {
 import { numbers, arrays, generateUuid, asyncs, objects } from 'util-kit';
 import { defaultOptions } from '../config/default';
 import Cropper from './cropper';
+import ImageDocx from '../model/ImageDocx'
 
 
 fabric.enableGLFiltering = true;
@@ -34,8 +35,11 @@ export default class LayerController {
   // state 
   // whether apply crop
   cropped: boolean = true;
-  
+  loading: boolean = false;
 
+
+  // curent image docs
+  imageDocx: ImageDocx;
 
   constructor(cmp: any, config: any) {
     (window as any)._ctrl = this;
@@ -89,27 +93,68 @@ export default class LayerController {
     this.update();
   }
 
-
-  addImage(imageEle, filename) {
-    const uid = generateUuid();
-    const oImg = new fabric.Image(imageEle, { 
-      name: filename, 
-      uid: uid,
-      lockUniScaling: this.options.ImageLockUniScaling,
-    });
-    oImg.filters = [
-      new fabric.Image.filters.Brightness({brightness: 0}),
-      new fabric.Image.filters.Contrast({contrast: 0}),
-      new fabric.Image.filters.HueRotation({rotation: 0}),
-      new fabric.Image.filters.Saturation({saturation: 0}),   
-    ];
-    this.fCanvas.add(oImg);
-    
-    if (this.cropped) {
-      this.addCropzone();
+  async loadJSON(data) {
+    this.fCanvas.clear();
+    this.loading = true;
+    this.cmp.forceUpdate();
+    this.imageDocx = new ImageDocx(data);
+    await this.imageDocx.build();
+    if (!this.imageDocx.region) {
+      this.cropped = false;
+    } else {
+      this.cropped = true;
+      // set cropzone
+      const {left, top, width, height, vWidth, vHeight } = this.imageDocx.region;
+      this.cropper.setSize({left, top, width, height});
     }
-    this._fitSize();
+    for (let i = 0; i < this.imageDocx.layers.length; i++) {
+      const layer = this.imageDocx.layers[i];
+      await this.loadImage(layer);
+    }
+    this.loading = false;
     this.update();
+  }
+
+  async addImage(base64, filename: string = '') {
+    if (!this.imageDocx) {
+
+      this.imageDocx = new ImageDocx({layers: [], region:{}});
+    }
+  }
+
+
+  private loadImage(layer) {
+    
+    return new Promise((resolve, reject) => {
+      const { contentBase64, uid, left, top, width, height, vWidth, vHeight, name } = layer;
+      fabric.Image.fromURL(contentBase64, (oImg) => {
+        
+        oImg.set({ 
+          name, 
+          uid,
+          lockUniScaling: this.options.ImageLockUniScaling,
+          left,
+          top,
+          width,
+          height,
+          scaleX: vWidth / width,
+          scaleY: vHeight / height
+        });
+        oImg.filters = [
+          new fabric.Image.filters.Brightness({brightness: 0}),
+          new fabric.Image.filters.Contrast({contrast: 0}),
+          new fabric.Image.filters.HueRotation({rotation: 0}),
+          new fabric.Image.filters.Saturation({saturation: 0}),   
+        ];
+        this.fCanvas.add(oImg);      
+        if (this.cropped) {
+          this.addCropzone();
+        }
+        this._fitSize();
+        this.update();
+        resolve(this);
+      });
+    })
   }
 
 
@@ -121,8 +166,9 @@ export default class LayerController {
     
     const cropzone = objs.find(item => item === this.cropper.cropzone);
     if (!cropzone) {
-      // todo recover previor left / top for cropzone
       this.fCanvas.add(this.cropper.cropzone);
+      // todo recover previor left / top for cropzone
+      this.cropper.reset();
     }  
     if (this.viewMode === ViewMode.Crop) {
       this.cropper.activeCropView();
@@ -191,7 +237,6 @@ export default class LayerController {
     this.update();
   }
 
-
   setViewMode(mode) {
     const prevMode = this.viewMode;
     if (prevMode === mode) {
@@ -205,7 +250,6 @@ export default class LayerController {
     }
     this.update();
   }
-
 
   getSize() {
     const width = this.fCanvas.getWidth();
@@ -234,12 +278,11 @@ export default class LayerController {
   }
 
   setCropperParam(type, val) {
-    this.cropper.setCropperParam(type, val);
+    this.cropper.setSize({[type]: val});
     this.update();
   }
 
-  exportImage() {
-
+  exportImage(): Promise<any> {
     const canvasWidth = this.fCanvas.getWidth();
     const canvasHeight = this.fCanvas.getHeight();
     const canvas = document.createElement('canvas');
@@ -293,10 +336,33 @@ export default class LayerController {
         
       });
 
-    });
+    }); 
+  }
+
+  async save() {
+    // todo sync canvas info to imageDocx
+    if (!this.imageDocx) {
+      return;
+    }
+    const layers = this.getAllLayers();
+    this.imageDocx.syncLayers(layers);
+    this.imageDocx.syncRegion(this.cropper);
+  }
+
+  toJSON() {
+    return this.imageDocx.toJSON();
+
+  }
+
+  async exportJSON() {
+    const { base64, width, height } = await this.exportImage();
+    console.log('output', width, height, base64);
 
     
+
   }
+
+
 
 
 

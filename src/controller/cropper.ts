@@ -4,11 +4,8 @@ import {
 } from '../const';
 import { fabric } from 'fabric';
 import { numbers, arrays } from 'util-kit';
+import { object } from 'prop-types';
 // import COVER from '../../assets/cover.jpg';
-
-
-
-const { mapArrayOrNot } = arrays;
 
 
 export default class Crop {
@@ -16,6 +13,11 @@ export default class Crop {
   fCanvas: any;
   cropzone: any = null;
 
+  // remove or add will lose group info
+  left: number = 0;
+  top: number = 0;
+  width: number = 0;
+  height: number = 0;
 
   constructor(fCanvas) {
     this.fCanvas = fCanvas;
@@ -61,9 +63,14 @@ export default class Crop {
         scaleX: 1,
         scaleY: 1,
       });
+      this.width = w;
+      this.height = h;
       this.fCanvas.requestRenderAll();
-    })
-    
+    });
+    this.cropzone.on('moving', () => {
+      this.left = this.cropzone.left;
+      this.top = this.cropzone.top;
+    });
 
     // fabric.Image.fromURL(COVER, (oImg) => {
     //   this.cropzone.addWithUpdate(oImg);
@@ -121,16 +128,24 @@ export default class Crop {
     };
   }
 
-  setCropperParam(type, val) {
-    const { left, top, width, height } = this.getCropperParam();
-    const dim = { left, top, width, height, [type]: val };
-    this.cropzone.set(dim);
+  setSize(param = {}) {
+    const keys = Object.keys(param);
+    keys.forEach(key => {
+      if (['left', 'top', 'width', 'height'].indexOf(key) > -1) {
+        this[key] = param[key];
+      }
+    });
+    this.reset();
+  }
+
+  reset() {
+    const {left, top, width, height } = this;
+    this.cropzone.set({left, top, width, height});
     this.cropzone.scale(1);  
     this.cropzone.forEachObject(item => {
-      item.set({left: -dim.width/2, top: -dim.height/2, width: dim.width, height: dim.height});
+      item.set({left: -width/2, top: -height/2, width: width, height: height});
       item.scale(1);
     });
-    
   }
 
 }
