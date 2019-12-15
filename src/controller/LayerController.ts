@@ -4,7 +4,7 @@ import {
   ViewMode, CANVAS_PADDING, 
   CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, CROP_ZONE_ID,
 } from '../const';
-import { numbers, arrays, generateUuid, asyncs, objects } from 'util-kit';
+import { numbers, arrays, generateUuid, asyncs, objects, decorators } from 'util-kit';
 import { defaultOptions } from '../config/default';
 import Cropper from './cropper';
 import ImageDocx from '../model/ImageDocx'
@@ -36,6 +36,7 @@ export default class LayerController {
   // whether apply crop
   cropped: boolean = true;
   loading: boolean = false;
+  loadingTxt: string = '处理中...';
 
 
   // curent image docs
@@ -44,11 +45,9 @@ export default class LayerController {
   constructor(cmp: any, config: any) {
     (window as any)._ctrl = this;
 
-    this.cmp = cmp;
-    
+    this.cmp = cmp;  
     objects.mixin(this.options, config);
 
-  
     this.cropped = this.options.forceCrop;
 
     const node = document.createElement('canvas');
@@ -62,8 +61,9 @@ export default class LayerController {
       containerClass: 'image-editor-canvas-container',
     });
     
-    this.fCanvas.on('item:selected', () => {
-      console.log('item selected');
+    // always show latest state
+    this.fCanvas.on('mouse:up', () => {
+      console.log('mouse:up');
       this.cmp.forceUpdate();
     });
     
@@ -82,6 +82,9 @@ export default class LayerController {
   }
 
   enableCropper(enable) {
+    if (!this.imageDocx) {
+      return false;
+    }
     this.cropped = enable;
     if (enable) {
       this.addCropzone();
@@ -91,12 +94,12 @@ export default class LayerController {
       this.fCanvas.remove(this.cropper.cropzone);
     }
     this.update();
+    return true;
   }
 
+  @async('加载中...')
   async loadJSON(data) {
     this.fCanvas.clear();
-    this.loading = true;
-    this.cmp.forceUpdate();
     this.imageDocx = new ImageDocx(data);
     await this.imageDocx.build();
     if (!this.imageDocx.region) {
@@ -108,27 +111,26 @@ export default class LayerController {
       this.cropper.setSize({left, top, width, height});
     }
     for (let i = 0; i < this.imageDocx.layers.length; i++) {
-      const layer = this.imageDocx.layers[i];
-      await this.loadImage(layer);
+      const docLayer = this.imageDocx.layers[i];
+      await this.loadImage(docLayer, this.imageDocx.region);
     }
-    this.loading = false;
-    this.update();
   }
 
-  async addImage(base64, filename: string = '') {
-    if (!this.imageDocx) {
 
+  @async('加载中...')
+  async addImage({url, base64, name,}) {  
+    if (!this.imageDocx) {
       this.imageDocx = new ImageDocx({layers: [], region:{}});
     }
+    const docLayer = await this.imageDocx.addImageLayer({ url, base64, name});
+    await this.loadImage(docLayer, this.imageDocx.region);
   }
 
 
-  private loadImage(layer) {
-    
+  private loadImage(layer, region) {
     return new Promise((resolve, reject) => {
       const { contentBase64, uid, left, top, width, height, vWidth, vHeight, name } = layer;
-      fabric.Image.fromURL(contentBase64, (oImg) => {
-        
+      fabric.Image.fromURL(contentBase64, (oImg) => {    
         oImg.set({ 
           name, 
           uid,
@@ -146,7 +148,8 @@ export default class LayerController {
           new fabric.Image.filters.HueRotation({rotation: 0}),
           new fabric.Image.filters.Saturation({saturation: 0}),   
         ];
-        this.fCanvas.add(oImg);      
+        this.cropper.setSize({left: region.left, top: region.top, width: region.vWidth, height: region.vHeight});
+        this.fCanvas.add(oImg);
         if (this.cropped) {
           this.addCropzone();
         }
@@ -162,8 +165,7 @@ export default class LayerController {
     const objs = this.fCanvas.getObjects();
     if (objs.length === 0) {
       return;
-    }
-    
+    } 
     const cropzone = objs.find(item => item === this.cropper.cropzone);
     if (!cropzone) {
       this.fCanvas.add(this.cropper.cropzone);
@@ -282,6 +284,7 @@ export default class LayerController {
     this.update();
   }
 
+  @async('合成中...')
   exportImage(): Promise<any> {
     const canvasWidth = this.fCanvas.getWidth();
     const canvasHeight = this.fCanvas.getHeight();
@@ -291,9 +294,6 @@ export default class LayerController {
       enableRetinaScaling: false,
     });
     tmpFCanvas.setDimensions({width: canvasWidth, height: canvasHeight});
-
-    (window as any).tmpC = tmpFCanvas;
-
     const data = this.fCanvas.toJSON();
     const len = data.objects.length;
     // remove cropper object
@@ -339,34 +339,48 @@ export default class LayerController {
     }); 
   }
 
-  async save() {
-    // todo sync canvas info to imageDocx
+  save() {
     if (!this.imageDocx) {
       return;
     }
     const layers = this.getAllLayers();
-    this.imageDocx.syncLayers(layers);
+    this.imageDocx.syncCanvasObjects(layers);
     this.imageDocx.syncRegion(this.cropper);
   }
 
-  toJSON() {
-    return this.imageDocx.toJSON();
-
+  @async('导出中...')
+  async toJSON() {
+    if (!this.imageDocx) {
+      return undefined;
+    }
+    this.save();
+    const res = await this.imageDocx.toJSON();
+    return res;
   }
-
-  async exportJSON() {
-    const { base64, width, height } = await this.exportImage();
-    console.log('output', width, height, base64);
-
-    
-
-  }
-
-
-
-
-
-
 
 }
 
+
+
+
+function async(txt: string = '处理中...') {
+  return decorators.createDecorator((fn, key) => {
+		return function (this: any, ...args: any[]) {
+      
+      const p = fn.apply(this, args);
+
+      if (p && typeof p.then === 'function') {
+        this.loading = true;
+        this.loadingTxt = txt;
+        this.cmp.forceUpdate();
+        p.finally(() => {
+          this.loading = false;
+          this.update();
+        });
+      }
+
+      return p;
+
+		};
+	});
+}

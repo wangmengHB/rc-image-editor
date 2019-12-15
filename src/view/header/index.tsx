@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Modal, Slider, InputNumber, Divider, Checkbox } from 'antd';
+import { Button, Modal, Slider, InputNumber, Divider, Checkbox, message } from 'antd';
 import { 
   MAX_CANVAS_PIXEL_SIZE, MAX_POS_VAL, MIN_POS_VAL,
   MIN_CANVAS_PIXEL_SIZE, 
@@ -41,7 +41,10 @@ export default class Header extends React.Component<HeaderProps> {
   enableCropper = e => {
     const checked = e.target.checked;
     const { layerController } = this.props;
-    layerController.enableCropper(checked);
+    const res = layerController.enableCropper(checked);
+    if (!res) {
+      message.error('当前没有图片！')
+    }
   }
 
   setCropperParam = (type, val) => {
@@ -69,15 +72,18 @@ export default class Header extends React.Component<HeaderProps> {
   loadJSON = () => {
     const { layerController } = this.props;
     layerController.loadJSON( test || (window as any).mock1);
-
   }
 
   exportJSON = () => {
     const { layerController } = this.props;
-    layerController.save();
-    test = layerController.toJSON(); 
+    
+    Promise.resolve(layerController.toJSON())
+      .then(obj => {
+        console.log(obj);
+        alert(JSON.stringify(obj));
+        test = obj;
+      }); 
   }
-
 
   loadImage = e => {
     const { layerController } = this.props;
@@ -85,7 +91,7 @@ export default class Header extends React.Component<HeaderProps> {
     const filename = e.target.files[0].name;
     reader.onload = (e: any) => {
       const base64: any = e.target.result;
-      layerController.addImage(base64, filename);
+      layerController.addImage({base64, name: filename});
       (this.refs.file as any).value = null;
     };
     reader.readAsDataURL(e.target.files[0]); 
@@ -117,18 +123,24 @@ export default class Header extends React.Component<HeaderProps> {
     const loadEnable = viewMode === ViewMode.Normal;
     const cropperParam = layerController.getCropperParam();
     const { cropped } = layerController;
-    const forceCrop = layerController.options.forceCrop;
+    const { forceCrop, allowAddLocalImage, } = layerController.options;
+    
     
     return (
       <div className={classnames([styles.header, className])} style={style}>
-        <Button 
-          className={styles['btn']} 
-          type="primary" 
-          onClick={this.openFileDialog}
-          disabled={!loadEnable}
-        >
-          加载本地图片
-        </Button>
+        {
+          allowAddLocalImage? (
+            <Button 
+              className={styles['btn']} 
+              type="primary" 
+              onClick={this.openFileDialog}
+              disabled={!loadEnable}
+            >
+              加载本地图片
+            </Button>
+          ): null
+        }
+  
         <Button 
           className={styles['btn']} 
           type="primary" 
@@ -143,7 +155,7 @@ export default class Header extends React.Component<HeaderProps> {
           onClick={this.exportJSON}
           disabled={!loadEnable}
         >
-          保存
+          导出JSON
         </Button>
         <input ref="file" className={styles.file} type="file" accept="image" onChange={this.loadImage}/>
         <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成图片</Button>
@@ -154,16 +166,21 @@ export default class Header extends React.Component<HeaderProps> {
           <Divider className={styles['divider']} type="vertical"/>
 
           <div className={styles['column-item']}>
-            <div className={styles['sub-item']}>
-              <Checkbox 
-                className={styles['checkbox']} 
-                checked={cropped} 
-                disabled={forceCrop}
-                onChange={this.enableCropper}
-              >
-                是否裁剪
-              </Checkbox>
-            </div>
+            {
+              !forceCrop? (
+                <div className={styles['sub-item']}>
+                  <Checkbox 
+                    className={styles['checkbox']} 
+                    checked={cropped} 
+                    disabled={forceCrop}
+                    onChange={this.enableCropper}
+                  >
+                    是否裁剪
+                  </Checkbox>
+                </div>
+              ): null
+            }
+            
             <div className={styles['sub-item']}>
               <Checkbox 
                 className={styles['checkbox']}
@@ -176,93 +193,101 @@ export default class Header extends React.Component<HeaderProps> {
             </div>
           </div>
 
-
-          <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
-            <div className={styles['param-item']}>
-              <div className={styles['label']}>裁剪x:</div>
-              <InputNumber 
-                className={styles['inputNumber']}
-                step={1}
-                min={MIN_POS_VAL}
-                max={MAX_POS_VAL}
-                value={cropperParam.left}
-                onChange={val => this.setCropperParam('left', val)}
-              />
-            </div>
-            <div className={styles['param-item']}>
-              <div className={styles['label']}>裁剪y:</div>
-              <InputNumber 
-                className={styles['inputNumber']}
-                step={1}
-                min={MIN_POS_VAL}
-                max={MAX_POS_VAL}
-                value={cropperParam.top}
-                onChange={val => this.setCropperParam('top', val)}
-              />
-            </div>
-          </div>
-
-          <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
-
-            <div className={styles['param-item']}>
-            
-              <div className={styles['label']}>裁剪宽:</div>
-              <InputNumber 
-                className={styles['inputNumber']}
-                step={1}
-                min={MIN_CANVAS_PIXEL_SIZE}
-                max={MAX_CANVAS_PIXEL_SIZE}
-                value={cropperParam.width}
-                onChange={val => this.setCropperParam('width', val)}
-              />
-            </div>
-
-            <div className={styles['param-item']}>
-              <div className={styles['label']}>
-                裁剪高:
+          { cropped ? (
+            <>
+              <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
+                <div className={styles['param-item']}>
+                  <div className={styles['label']}>裁剪x:</div>
+                  <InputNumber 
+                    className={styles['inputNumber']}
+                    step={1}
+                    min={MIN_POS_VAL}
+                    max={MAX_POS_VAL}
+                    value={cropperParam.left}
+                    onChange={val => this.setCropperParam('left', val)}
+                  />
+                </div>
+                <div className={styles['param-item']}>
+                  <div className={styles['label']}>裁剪y:</div>
+                  <InputNumber 
+                    className={styles['inputNumber']}
+                    step={1}
+                    min={MIN_POS_VAL}
+                    max={MAX_POS_VAL}
+                    value={cropperParam.top}
+                    onChange={val => this.setCropperParam('top', val)}
+                  />
+                </div>
               </div>
-              <InputNumber 
-                className={styles['inputNumber']}
-                step={1}
-                min={MIN_CANVAS_PIXEL_SIZE}
-                max={MAX_CANVAS_PIXEL_SIZE}
-                value={cropperParam.height}
-                onChange={val => this.setCropperParam('height', val)}
-              />
-            </div>
-          </div>
 
-          <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
+              <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
 
-            <div className={styles['param-item']}>
-            
-              <div className={styles['label']}>目标宽:</div>
-              <InputNumber 
-                className={styles['inputNumber']}
-                step={1}
-                min={MIN_CANVAS_PIXEL_SIZE}
-                max={MAX_CANVAS_PIXEL_SIZE}
-                value={cropperParam.width}
-                disabled
-                // onChange={val => this.changeDimension('height', val)}
-              />
-            </div>
+                <div className={styles['param-item']}>
+                
+                  <div className={styles['label']}>裁剪宽:</div>
+                  <InputNumber 
+                    className={styles['inputNumber']}
+                    step={1}
+                    min={0}
+                    max={MAX_CANVAS_PIXEL_SIZE}
+                    value={cropperParam.width}
+                    onChange={val => this.setCropperParam('width', val)}
+                  />
+                </div>
 
-            <div className={styles['param-item']}>
-              <div className={styles['label']}>
-                目标高:
+                <div className={styles['param-item']}>
+                  <div className={styles['label']}>
+                    裁剪高:
+                  </div>
+                  <InputNumber 
+                    className={styles['inputNumber']}
+                    step={1}
+                    min={0}
+                    max={MAX_CANVAS_PIXEL_SIZE}
+                    value={cropperParam.height}
+                    onChange={val => this.setCropperParam('height', val)}
+                  />
+                </div>
               </div>
-              <InputNumber 
-                className={styles['inputNumber']}
-                step={1}
-                min={MIN_CANVAS_PIXEL_SIZE}
-                max={MAX_CANVAS_PIXEL_SIZE}
-                value={cropperParam.height}
-                disabled
-                // onChange={val => this.changeDimension('height', val)}
-              />
-            </div>
-          </div>
+
+              {/* <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
+
+                <div className={styles['param-item']}>
+                
+                  <div className={styles['label']}>目标宽:</div>
+                  <InputNumber 
+                    className={styles['inputNumber']}
+                    step={1}
+                    min={MIN_CANVAS_PIXEL_SIZE}
+                    max={MAX_CANVAS_PIXEL_SIZE}
+                    value={cropperParam.width}
+                    disabled
+                    // onChange={val => this.changeDimension('height', val)}
+                  />
+                </div>
+
+                <div className={styles['param-item']}>
+                  <div className={styles['label']}>
+                    目标高:
+                  </div>
+                  <InputNumber 
+                    className={styles['inputNumber']}
+                    step={1}
+                    min={MIN_CANVAS_PIXEL_SIZE}
+                    max={MAX_CANVAS_PIXEL_SIZE}
+                    value={cropperParam.height}
+                    disabled
+                    // onChange={val => this.changeDimension('height', val)}
+                  />
+                </div>
+              </div> */}
+
+            </>
+
+          ): null}
+
+
+          
 
           
 

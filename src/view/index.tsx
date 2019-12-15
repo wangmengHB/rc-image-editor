@@ -3,6 +3,7 @@ import { Spin } from 'antd';
 import Header from './header';
 import ImageLayerList from './image-layer-list';
 import WorkCanvas from './work-canvas';
+import ImageDocxList from './image-docx-list';
 import LayerController from '../controller/LayerController';
 import classnames from 'classnames';
 import styles from './index.module.less';
@@ -49,10 +50,10 @@ export default class ImageEditorView extends React.Component<ImageEditorProps, I
               className={styles['image-list']}
               layerController={layerController} 
             />
-            {/* <ToolPanel 
-              className={styles['tool-panel']}
+            <ImageDocxList 
+              className={styles['doc-list']}
               layerController={layerController} 
-            /> */}
+            />
 
             <WorkCanvas 
               className={styles['work-canvas']} 

@@ -18,27 +18,30 @@ export default class Layer {
   vWidth: number = 0;
   vHeight: number = 0;
 
-  scale: number = 1;
+  scaleX: number = 1;
+  scaleY: number = 1;
 
   // uid
   uid: string;
+  name: string;
 
   // target data
   targetUrl: string;
   targetBase64: string;
 
   constructor(json: any = {}) {
-    const { contentUrl, contentBase64, x, y, vWidth, vHeight} = json;
+    const { contentUrl, contentBase64, x, y, vWidth, vHeight, name} = json;
     if (!contentUrl && !contentBase64) {
       throw new Error('layer has no image source!');
     }
-    this.left = x;
-    this.top = y;
+    this.left = x || 0;
+    this.top = y || 0;
     this.contentUrl = contentUrl;
     this.contentBase64 = contentBase64;
-    this.vWidth = vWidth;
-    this.vHeight = vHeight;
+    this.vWidth = vWidth || 0;
+    this.vHeight = vHeight || 0;
     this.uid = generateUuid();
+    this.name = name || '';
   }
 
 
@@ -46,25 +49,39 @@ export default class Layer {
   async build() {
     // todo: for cross-orgin safety issue, you must do sth get base64 content
     // otherwise canvas can not read pixel data from cross-origin image
-    if (!this.contentBase64 || this.width <= 0 || this.height <= 0) {
-      const {base64, width, height} = await fakeConvertBase64(this.contentUrl);
+    
+    if (!this.contentBase64) {
+      this.contentBase64 = await fakeUrlToBase64(this.contentUrl);
+    }
+    if (this.width <= 0 || this.height <= 0) {
+      const {width, height} = await getImageSize(this.contentBase64);
       this.width = width;
       this.height = height;
-      this.contentBase64 = base64;
     }
+
+    if (this.vWidth <= 0 || this.vHeight <= 0) {
+      this.vWidth = this.width;
+      this.vHeight = this.height;
+      this.scaleX = 1;
+      this.scaleY = 1;
+    } else {
+      this.scaleX = this.vWidth / this.width;
+      // this.scaleY = this.vHeight / this.height;
+      // not allowed uniscale
+      this.scaleY = this.scaleX;
+    }
+
+
   }
 
   async toJSON(removeBase64: boolean = true) {
 
   }
-
   
-
-
 }
 
 
-function fakeConvertBase64(url): Promise<any> {
+function fakeUrlToBase64(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image(); 
     img.onload = () => {
@@ -73,14 +90,30 @@ function fakeConvertBase64(url): Promise<any> {
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, img.width, img.height);
-      
-      const data = {
-        width: img.width,
-        height: img.height,
-        base64: canvas.toDataURL(),
-      }
-      resolve(data);
+      resolve(canvas.toDataURL());
     }
     img.src = url;
   });
 }
+
+
+function getImageSize(base64): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const img = new Image(); 
+    img.onload = () => {
+      // const canvas = document.createElement('canvas');
+      // canvas.width = img.width;
+      // canvas.height = img.height;
+      // const ctx = canvas.getContext('2d');
+      // ctx.drawImage(img, 0, 0, img.width, img.height);
+      
+      const data = {
+        width: img.width,
+        height: img.height,
+      }
+      resolve(data);
+    }
+    img.src = base64;
+  });
+}
+

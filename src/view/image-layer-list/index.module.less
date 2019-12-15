@@ -8,7 +8,8 @@
 
   .title {
     padding: 4px;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 500;
     border: solid 1px rgba(0,0,0,0.1);
 
     .sub-title{
@@ -35,10 +36,9 @@
       border: solid 1px rgba(0,0,0,0.1);
       
       &.active {
-        border: 3px solid red;
+        border: 3px solid black;
         background: #fff;
       }
-
       
     }
 
@@ -164,5 +164,15 @@
     }
     
   }
+
+  .scale-ctrl{
+    display: flex;
+    align-items: center;
+
+    .slider{
+      width: 60%;
+    }
+  }
+
 
 }

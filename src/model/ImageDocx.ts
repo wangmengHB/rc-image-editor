@@ -9,45 +9,54 @@ import Cropzone from './Cropzone';
 
 export default class ImageDocx {
 
+  previewUrl: string;
+
   layers: Layer[] = [];
   region: Cropzone | null;
 
   _intialized: boolean = false;
 
   constructor(json) {
-    const { layers, region } = json;
+    const { layers, region, previewUrl } = json;
     if (!Array.isArray(layers)) {
       throw new Error('layers must be an array!');
     }
     this.layers = layers.map(item => new Layer(item));
-    if (region) {
-      this.region = new Cropzone(region);
-    } else {
-      this.region = null;
-    }   
-    
+    this.region = new Cropzone(region);
+    this.previewUrl = previewUrl;
     this._intialized = false;
   }
 
   async build() {
-    
     for (let i = 0; i < this.layers.length; i++) {
       const layer = this.layers[i];
       await layer.build();
     }
-    if (this.region) {
-      this.region.checkSize(
-        Math.max(...this.layers.map(item => item.width)), 
-        Math.max(...this.layers.map(item => item.height))
-      );
-    }
+    this.region.checkSize(
+      Math.max(...this.layers.map(item => item.width)), 
+      Math.max(...this.layers.map(item => item.height))
+    );
   }
 
-  syncLayers(layers: any[]) {
-    const _layers = [];
+  async addImageLayer({url, base64, name}) {
+    const layer = new Layer({
+      contentUrl: url,
+      contentBase64: base64,
+      name
+    });
+    await layer.build(); 
+    this.layers.push(layer);
+    this.region.checkSize(
+      Math.max(...this.layers.map(item => item.width)), 
+      Math.max(...this.layers.map(item => item.height))
+    );
+    return layer;
+  }
 
-    layers.forEach(cLayer => {
-      const {uid, left, top, width, height, scaleX, scaleY, filters} = cLayer;
+  syncCanvasObjects(layers: any[]) {
+    const _layers = [];
+    layers.forEach(canvasObject => {
+      const {uid, left, top, width, height, scaleX, scaleY, filters} = canvasObject;
       const target = this.layers.find(item => item.uid === uid);
       if (!target) {
         return;
@@ -63,7 +72,7 @@ export default class ImageDocx {
         return keys.every(key => item[key] === 0)
       });
       if (!pixelUnChanged) {
-        target.targetBase64 = cLayer.toDataURL();
+        target.targetBase64 = canvasObject.toDataURL();
       }
       _layers.push(target);
     });
@@ -71,27 +80,40 @@ export default class ImageDocx {
   }
 
   syncRegion(cropper: any) {
-
+    const { left, top, width, height} = cropper;
+    this.region.left = left;
+    this.region.top = top;
+    this.region.width = width;
+    this.region.height = height;
+    this.region.vWidth = width;
+    this.region.vHeight = height;
   }
 
 
-  toJSON() {
-    
-    const region = null;
-
-    const layers = this.layers.map(item => {
-      const url = item.targetBase64 || item.contentBase64;
+  async toJSON() {
+    const layers = [];
+    for (let i = 0; i < this.layers.length; i++) {
+      const item = this.layers[i];
+      const base64 = item.targetBase64 || item.contentBase64;
 
       // todo fetch url from base64
+      const url = await fakeBase64ToUrl(base64);
 
-      return {
+      layers.push({
         x: item.left,
         y: item.top,
         vWidth: item.vWidth,
         vHeight: item.vHeight,
         contentUrl: url
-      };
-    })
+      });
+    }
+    
+    const region = {
+      x: this.region.left,
+      y: this.region.top,
+      vWidth: this.region.vWidth,
+      vHeight: this.region.vHeight,
+    };
 
     return {
       layers,
@@ -100,9 +122,18 @@ export default class ImageDocx {
 
   }
 
+}
 
 
+function fakeBase64ToUrl(base64) {
+  return new Promise((resolve, reject) => {
 
+    setTimeout(() => {
+      const url = base64;
+      resolve(url);
+    }, 100)
+
+  })
 
 }
 

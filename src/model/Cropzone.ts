@@ -18,20 +18,22 @@ export default class Cropzone {
 
 
   constructor(json ) {
-    const data = json || objects.deepClone(defaultCropzone);
+    const data = json || {};
     const { x , y, vWidth, vHeight} = data;
-    this.left = x;
-    this.top = y;
-    this.width = vWidth;
-    this.height = vHeight;
-    this.vWidth = vWidth;
-    this.vHeight = vHeight;
+    this.left = x || 0;
+    this.top = y || 0;
+    this.width = vWidth || 0;
+    this.height = vHeight || 0;
+    this.vWidth = vWidth || 0;
+    this.vHeight = vHeight || 0;
   }
 
   checkSize(width, height) {
     if (this.vWidth <= 0 || this.vHeight <= 0) {
       this.vWidth = width;
       this.vHeight = height;
+      this.width = width;
+      this.height = height;
     }
   }
 

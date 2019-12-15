@@ -1,5 +1,5 @@
 
-@tool-panel-width: 0px;
+@doc-list-width: 120px;
 @image-layer-width: 240px;
 @header-height: 60px;
 @min-height: 550px;
@@ -33,19 +33,19 @@
     width: @image-layer-width;
   }
 
-  .tool-panel{
+  .doc-list{
     position: absolute;
     left: 0;
     top: 0;
     z-index: 2;
-    width: @tool-panel-width;
+    width: @doc-list-width;
   }
 
   .work-canvas {
     position: absolute;
-    left: @tool-panel-width;
+    left: @doc-list-width;
     top: 0;
-    width: ~"calc(100% - @{image-layer-width})";
+    width: ~"calc(100% - @{image-layer-width} - @{doc-list-width})";
   }
 
 }

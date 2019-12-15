@@ -1,8 +1,13 @@
 import * as React from 'react';
 import classnames from 'classnames';
-import { Icon, Button, Input, InputNumber, Tooltip } from 'antd';
+import { Icon, Button, Input, InputNumber, Slider } from 'antd';
 import { Direction, MIN_SCALE, MIN_POS_VAL, MAX_POS_VAL, ViewMode } from '../../const';
 import styles from './index.module.less';
+
+const MIN = 0.1;
+const MAX = 4;
+const PERCENT = 100;
+
 
 
 export interface ParamControlProps{
@@ -23,26 +28,27 @@ export default class ParamControl extends React.Component<ParamControlProps> {
     layerController.update();
   }
 
+  setScale = (val, item) => {
+    const { layerController } = this.props;
+    const num = parseFloat(val) || 1;
+    item.scale(num);
+    layerController.update();
+  }
 
 
   render() {
     const { isActive, item, layerController } = this.props;
     const { name, width, height, left, top, } = item;
-    let scaleX = item.get('scaleX');
-    let scaleY = item.get('scaleY');
-    scaleX = scaleX <= MIN_SCALE? 0: scaleX;
-    scaleY = scaleY <= MIN_SCALE? 0: scaleY;     
-
-
+    let scale = item.get('scaleX') || 1;
+    
     return (
       <div className={styles['param-control']}>
         <div className={styles['param-item']}>
           <span className={styles['label']}>x:</span>
           <InputNumber 
             className={styles['value']}
-            disabled={!isActive}
-            precision={1}  
-            value={left}
+            disabled={!isActive}  
+            value={Math.floor(left)}
             min={MIN_POS_VAL}
             max={MAX_POS_VAL}
             step={1}
@@ -54,15 +60,14 @@ export default class ParamControl extends React.Component<ParamControlProps> {
           <InputNumber 
             className={styles['value']} 
             disabled={!isActive} 
-            value={top}
-            precision={1}
+            value={Math.floor(top)}    
             min={MIN_POS_VAL}
             max={MAX_POS_VAL}
             step={1}
             onChange={(val) => this.changeItemParam(val, 'top', item)} 
           />
         </div>
-        <div className={styles['param-item']}>
+        {/* <div className={styles['param-item']}>
           <span className={styles['label']}>宽:</span>
           <InputNumber 
             className={styles['value']} 
@@ -87,31 +92,25 @@ export default class ParamControl extends React.Component<ParamControlProps> {
             step={1}
             onChange={(val) => this.changeItemParam(val, 'height', item)} 
           />
-        </div>
-        <div className={styles['param-item']}>
-          <span className={styles['label']}>缩放x:</span>
-          <InputNumber 
-            className={styles['value']} 
-            disabled={!isActive} 
-            value={scaleX}
-            min={0.1}
-            max={10}
-            step={0.1}
-            onChange={(val) => this.changeItemParam(val, 'scaleX', item)} 
-          />
-        </div>
-        <div className={styles['param-item']}>
-          <span className={styles['label']}>缩放y:</span>
-          <InputNumber 
-            className={styles['value']} 
+        </div> */}
+        
+        <div className={styles['scale-ctrl']}>
+          <div className={styles['label']}>缩放:</div>
+          <Slider
             disabled={!isActive}
-            value={scaleY}
-            min={0.1}
-            step={0.1}
-            max={10}
-            onChange={(val) => this.changeItemParam(val, 'scaleY', item)} 
-          />     
+            className={styles['slider']}
+            min={MIN * PERCENT}
+            max={MAX * PERCENT}
+            onChange={(val:any) => this.setScale(val/PERCENT, item)}
+            value={scale * PERCENT}
+          />
+          <div className={styles['percent']}>{`${parseInt(scale * PERCENT as any)} %`}</div>
+
         </div>
+
+
+
+
       </div>
     )
 

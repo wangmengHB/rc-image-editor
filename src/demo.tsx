@@ -14,6 +14,7 @@ document.body.appendChild(root);
 
 const config = {
   forceCrop: false,
+  allowAddLocalImage: false,
 
 }
 
