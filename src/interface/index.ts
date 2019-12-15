@@ -9,3 +9,12 @@ export interface ImageEditorConfig {
 
 
 }
+
+export interface IdocxJSON{
+  previewUrl: string;
+  layers: any[];
+  region: any;
+  uid?: string;
+
+}
+

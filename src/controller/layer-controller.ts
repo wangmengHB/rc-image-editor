@@ -4,10 +4,10 @@ import {
   ViewMode, CANVAS_PADDING, 
   CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, CROP_ZONE_ID,
 } from '../const';
-import { numbers, arrays, generateUuid, asyncs, objects, decorators } from 'util-kit';
+import { objects, decorators } from 'util-kit';
 import { defaultOptions } from '../config/default';
 import Cropper from './cropper';
-import ImageDocx from '../model/ImageDocx'
+import ImageDocx from '../model/image-docx'
 
 
 fabric.enableGLFiltering = true;
@@ -41,6 +41,7 @@ export default class LayerController {
 
   // curent image docs
   imageDocx: ImageDocx;
+  idocxUid: any;
 
   constructor(cmp: any, config: any) {
     (window as any)._ctrl = this;
@@ -98,16 +99,17 @@ export default class LayerController {
   }
 
   @async('加载中...')
-  async loadJSON(data) {
+  async loadIdocx(data) {
     this.fCanvas.clear();
     this.imageDocx = new ImageDocx(data);
+    this.idocxUid = data.uid;
     await this.imageDocx.build();
     if (!this.imageDocx.region) {
       this.cropped = false;
     } else {
       this.cropped = true;
       // set cropzone
-      const {left, top, width, height, vWidth, vHeight } = this.imageDocx.region;
+      const {left, top, width, height } = this.imageDocx.region;
       this.cropper.setSize({left, top, width, height});
     }
     for (let i = 0; i < this.imageDocx.layers.length; i++) {
@@ -134,7 +136,8 @@ export default class LayerController {
         oImg.set({ 
           name, 
           uid,
-          lockUniScaling: this.options.ImageLockUniScaling,
+          lockUniScaling: this.options.imageLockUniScaling,
+          lockRotation: this.options.imageLockRotation,
           left,
           top,
           width,
@@ -148,7 +151,7 @@ export default class LayerController {
           new fabric.Image.filters.HueRotation({rotation: 0}),
           new fabric.Image.filters.Saturation({saturation: 0}),   
         ];
-        this.cropper.setSize({left: region.left, top: region.top, width: region.vWidth, height: region.vHeight});
+        this.cropper.setSize({left: region.left, top: region.top, width: region.width, height: region.height});
         this.fCanvas.add(oImg);
         if (this.cropped) {
           this.addCropzone();
@@ -294,6 +297,10 @@ export default class LayerController {
       enableRetinaScaling: false,
     });
     tmpFCanvas.setDimensions({width: canvasWidth, height: canvasHeight});
+
+    // fixme: image load event is out of control
+    // maybe need to clone layer object instead of JSON
+
     const data = this.fCanvas.toJSON();
     const len = data.objects.length;
     // remove cropper object
@@ -332,7 +339,7 @@ export default class LayerController {
             width,
             height
           });
-        }, 100);
+        }, 1000);
         
       });
 

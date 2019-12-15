@@ -7,6 +7,7 @@ import {
 } from '../../const';
 import styles from './index.module.less';
 import classnames from 'classnames';
+import IdocxJSONList from '../../model/idocx-json-list';
 
 
 
@@ -14,19 +15,40 @@ export interface ImageDocxListProps{
   className?: string;
   style?: React.CSSProperties;
   layerController: any;
+  idocxList: IdocxJSONList;
 }
 
 
 export default class ImageDocxList extends React.Component<ImageDocxListProps>{
 
-
-
+  loadIdocx = (data) => {
+    const { layerController } = this.props;
+    layerController.loadIdocx(data);
+  }
 
   render() {
-    const { layerController, className, style } = this.props;
-
+    const { layerController, className, style, idocxList } = this.props;
+    
     return (
-      <div className={classnames([styles['doc-list'], className])} style={style}>
+      <div className={classnames([styles['doc-list-panel'], className])} style={style}>
+        <div className={styles['title']}>文件列表</div>
+        <div className={styles['doc-list']}>
+          {
+            idocxList.list.map(item => {
+              const isActive = layerController.originIdocxJSON === item;
+
+              return (
+                <div 
+                  className={classnames({[styles['item']]: true, [styles['active']]: isActive})}
+                  onClick={() => this.loadIdocx(item)}
+                >
+                  <img className={styles['thunbnail']} src={item.previewUrl}/>
+                </div>
+              )
+            })
+          }
+        </div>
+
 
       </div>
     )

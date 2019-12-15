@@ -1,10 +1,5 @@
-/*
-  idocx means: image document for persisent storage
-
-*/
 import Layer from './Layer';
-import Cropzone from './Cropzone';
-
+import Region from './Region';
 
 
 export default class ImageDocx {
@@ -12,7 +7,7 @@ export default class ImageDocx {
   previewUrl: string;
 
   layers: Layer[] = [];
-  region: Cropzone | null;
+  region: Region | null;
 
   _intialized: boolean = false;
 
@@ -22,7 +17,7 @@ export default class ImageDocx {
       throw new Error('layers must be an array!');
     }
     this.layers = layers.map(item => new Layer(item));
-    this.region = new Cropzone(region);
+    this.region = new Region(region);
     this.previewUrl = previewUrl;
     this._intialized = false;
   }
@@ -85,8 +80,6 @@ export default class ImageDocx {
     this.region.top = top;
     this.region.width = width;
     this.region.height = height;
-    this.region.vWidth = width;
-    this.region.vHeight = height;
   }
 
 
@@ -111,8 +104,8 @@ export default class ImageDocx {
     const region = {
       x: this.region.left,
       y: this.region.top,
-      vWidth: this.region.vWidth,
-      vHeight: this.region.vHeight,
+      vWidth: this.region.width,
+      vHeight: this.region.height,
     };
 
     return {

@@ -1,9 +1,5 @@
 
-import { defaultCropzone } from '../config/default';
-import { objects } from 'util-kit';
-
-
-export default class Cropzone {
+export default class Region {
 
   left: number = 0;
   top: number = 0;
@@ -13,9 +9,8 @@ export default class Cropzone {
   height: number = 0;
 
   // target output size
-  vWidth: number = 0;
-  vHeight: number = 0;
-
+  // targetWidth: number = 0;
+  // targetHeight: number = 0;
 
   constructor(json ) {
     const data = json || {};
@@ -24,28 +19,13 @@ export default class Cropzone {
     this.top = y || 0;
     this.width = vWidth || 0;
     this.height = vHeight || 0;
-    this.vWidth = vWidth || 0;
-    this.vHeight = vHeight || 0;
   }
 
   checkSize(width, height) {
-    if (this.vWidth <= 0 || this.vHeight <= 0) {
-      this.vWidth = width;
-      this.vHeight = height;
+    if (this.width <= 0 || this.height <= 0) {
       this.width = width;
       this.height = height;
     }
   }
-
-
-  toJSON() {
-
-  }
-
-
-
-
-
-
 
 }

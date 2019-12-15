@@ -4,6 +4,7 @@
 export const defaultOptions = Object.freeze({
   forceCrop: true,
   imageLockUniScaling: true,
+  imageLockRotation: true,
   cropLockUniScaling: false,
   allowAddLocalImage: true,
 

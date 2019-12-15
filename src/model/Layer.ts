@@ -71,7 +71,6 @@ export default class Layer {
       this.scaleY = this.scaleX;
     }
 
-
   }
 
   async toJSON(removeBase64: boolean = true) {

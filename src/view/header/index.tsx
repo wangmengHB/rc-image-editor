@@ -85,7 +85,7 @@ export default class Header extends React.Component<HeaderProps> {
       }); 
   }
 
-  loadImage = e => {
+  loadLocalImage = e => {
     const { layerController } = this.props;
     const reader = new FileReader();
     const filename = e.target.files[0].name;
@@ -128,6 +128,7 @@ export default class Header extends React.Component<HeaderProps> {
     
     return (
       <div className={classnames([styles.header, className])} style={style}>
+        <input ref="file" className={styles.file} type="file" accept="image" onChange={this.loadLocalImage}/>
         {
           allowAddLocalImage? (
             <Button 
@@ -140,15 +141,7 @@ export default class Header extends React.Component<HeaderProps> {
             </Button>
           ): null
         }
-  
-        <Button 
-          className={styles['btn']} 
-          type="primary" 
-          onClick={this.loadJSON}
-          disabled={!loadEnable}
-        >
-          加载MOCK
-        </Button>
+         
         <Button 
           className={styles['btn']} 
           type="primary" 
@@ -157,8 +150,8 @@ export default class Header extends React.Component<HeaderProps> {
         >
           导出JSON
         </Button>
-        <input ref="file" className={styles.file} type="file" accept="image" onChange={this.loadImage}/>
-        <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成图片</Button>
+        
+        <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成预览</Button>
 
         
         <div className={styles['control']}>

@@ -4,10 +4,12 @@ import Header from './header';
 import ImageLayerList from './image-layer-list';
 import WorkCanvas from './work-canvas';
 import ImageDocxList from './image-docx-list';
-import LayerController from '../controller/LayerController';
+import LayerController from '../controller/layer-controller';
 import classnames from 'classnames';
 import styles from './index.module.less';
 import { ImageEditorConfig } from '../interface';
+import { numbers, arrays, generateUuid, asyncs, objects, decorators } from 'util-kit';
+import IdocxJSONList from '../model/idocx-json-list';
 
 
 
@@ -15,10 +17,12 @@ export interface ImageEditorProps {
   className?: string;
   style?: React.CSSProperties;
   config: ImageEditorConfig;
+  idocxList: any[];
 }
 
 export interface ImageEditorState {
   layerController: LayerController;
+  idocxList: IdocxJSONList;
 }
 
 
@@ -28,18 +32,18 @@ export default class ImageEditorView extends React.Component<ImageEditorProps, I
 
   constructor(props: ImageEditorProps) {
     super(props);
-    const { config } = props;
-
+    const { config, idocxList } = props;
     this.state = {
       layerController: new LayerController(this, config),
+      idocxList: new IdocxJSONList(idocxList),
     }
   }
 
 
 
   render() {
-    const { className, style } = this.props;
-    const { layerController } = this.state;
+    const { className, style} = this.props;
+    const { layerController, idocxList } = this.state;
 
     return (
       <Spin spinning={layerController.loading} tip="处理中...">
@@ -52,7 +56,8 @@ export default class ImageEditorView extends React.Component<ImageEditorProps, I
             />
             <ImageDocxList 
               className={styles['doc-list']}
-              layerController={layerController} 
+              layerController={layerController}
+              idocxList={idocxList}
             />
 
             <WorkCanvas 
