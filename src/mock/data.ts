@@ -54,8 +54,8 @@ const IDOCX_2 = {
     },
   ],
   region: {
-    x: 200,
-    y: 300,
+    x: 300,
+    y: 200,
     vHeight: 400,
     vWidth: 400,
   }
@@ -66,12 +66,6 @@ export const IMAGE_DOCX_LIST = [IDOCX_1, IDOCX_2];
 
 
 (window as any).mock1 = IDOCX_2;
-
-
-
-
-
-
 
 
 

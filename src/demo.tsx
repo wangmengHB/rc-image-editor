@@ -13,7 +13,7 @@ document.body.appendChild(root);
 
 
 const config = {
-  forceCrop: false,
+  forceCrop: true,
   allowAddLocalImage: false,
 
 }

@@ -39,6 +39,13 @@ export default class ImageEditorView extends React.Component<ImageEditorProps, I
     }
   }
 
+  componentDidMount() {
+    const { layerController, idocxList } = this.state;
+    if (idocxList.list.length > 0 && !layerController.imageDocx) {
+      layerController.loadIdocx(idocxList.list[0]);
+    }
+  }
+
 
 
   render() {
@@ -48,7 +55,11 @@ export default class ImageEditorView extends React.Component<ImageEditorProps, I
     return (
       <Spin spinning={layerController.loading} tip="处理中...">
         <div className={classnames([styles['image-editor'], className])} style={style}>
-          <Header className={styles['header']} layerController={layerController}/>
+          <Header 
+            className={styles['header']} 
+            layerController={layerController}
+            idocxList={idocxList}
+          />
           <div className={styles['main']}>
             <ImageLayerList 
               className={styles['image-list']}

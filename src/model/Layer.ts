@@ -1,5 +1,7 @@
 import { numbers, arrays, generateUuid, asyncs, objects } from 'util-kit';
 
+const { clamp } = numbers;
+
 
 export default class Layer {
 
@@ -21,6 +23,14 @@ export default class Layer {
   scaleX: number = 1;
   scaleY: number = 1;
 
+  // filter
+  filter = {
+    brightness: 0,
+    contrast: 0,
+    hue: 0,
+    saturation: 0,
+  }
+
   // uid
   uid: string;
   name: string;
@@ -30,7 +40,7 @@ export default class Layer {
   targetBase64: string;
 
   constructor(json: any = {}) {
-    const { contentUrl, contentBase64, x, y, vWidth, vHeight, name} = json;
+    const { contentUrl, contentBase64, x, y, vWidth, vHeight, name, filter} = json;
     if (!contentUrl && !contentBase64) {
       throw new Error('layer has no image source!');
     }
@@ -42,6 +52,9 @@ export default class Layer {
     this.vHeight = vHeight || 0;
     this.uid = generateUuid();
     this.name = name || '';
+    if (filter) {
+      this.initialFilter(filter);
+    }
   }
 
 
@@ -73,8 +86,13 @@ export default class Layer {
 
   }
 
-  async toJSON(removeBase64: boolean = true) {
-
+  initialFilter(filter = {}) {
+    const keys = Object.keys(filter);
+    keys.forEach(key => {
+      if (typeof filter[key] === 'number') {
+        this.filter[key] = clamp(filter[key], -1, 1);
+      }
+    })
   }
   
 }

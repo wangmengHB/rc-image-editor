@@ -7,7 +7,7 @@ import {
 } from '../../const';
 import styles from './index.module.less';
 import classnames from 'classnames';
-import '../../mock/data';
+import IdocxJSONList from '../../model/idocx-json-list';
 
 
 const PERCENT = 100;
@@ -16,14 +16,11 @@ const MAX = 1;
 const PARAM_ITEM_WIDTH = 100;
 
 
-let test;
-
-
-
 export interface HeaderProps{
   className?: string;
   style?: React.CSSProperties;
   layerController: any;
+  idocxList: IdocxJSONList;
 }
 
 export default class Header extends React.Component<HeaderProps> {
@@ -69,13 +66,22 @@ export default class Header extends React.Component<HeaderProps> {
     });  
   }
 
-  loadJSON = () => {
-    const { layerController } = this.props;
-    layerController.loadJSON( test || (window as any).mock1);
-  }
+  save = () => {
+    const { layerController, idocxList } = this.props;
+    const uid = layerController.originIdocxUid;
+    const currentIndex = idocxList.list.findIndex(item => item.uid === uid);
+    if (!uid || !layerController.imageDocx || currentIndex === -1) {
+      return;
+    }
+    layerController.toJSON().then(data => {
+      idocxList.list[currentIndex] = {
+        ...idocxList.list[currentIndex],
+        ...data
+      }
+      // layerController.loadIdocx(idocxList.list[currentIndex]);
+    });
 
-  exportJSON = () => {
-    const { layerController } = this.props;
+
     
     Promise.resolve(layerController.toJSON())
       .then(obj => {
@@ -145,10 +151,10 @@ export default class Header extends React.Component<HeaderProps> {
         <Button 
           className={styles['btn']} 
           type="primary" 
-          onClick={this.exportJSON}
+          onClick={this.save}
           disabled={!loadEnable}
         >
-          导出JSON
+          保存
         </Button>
         
         <Button className={styles['btn']} type="primary" onClick={this.exportImage}>合成预览</Button>

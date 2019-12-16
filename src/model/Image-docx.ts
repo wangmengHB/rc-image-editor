@@ -51,7 +51,10 @@ export default class ImageDocx {
   syncCanvasObjects(layers: any[]) {
     const _layers = [];
     layers.forEach(canvasObject => {
-      const {uid, left, top, width, height, scaleX, scaleY, filters} = canvasObject;
+      const {
+        uid, left, top, width, height, 
+        scaleX, scaleY, filters
+      } = canvasObject;
       const target = this.layers.find(item => item.uid === uid);
       if (!target) {
         return;
@@ -62,10 +65,17 @@ export default class ImageDocx {
       target.height = height;
       target.vWidth = width * scaleX;
       target.vHeight = height * scaleY;
+
       let pixelUnChanged = filters.every((item) => {
         const keys = Object.keys(item);
-        return keys.every(key => item[key] === 0)
+        return keys.every(key => {
+          if (typeof item[key] === 'number') {
+            return item[key] === 0;
+          }
+          return true;
+        })
       });
+
       if (!pixelUnChanged) {
         target.targetBase64 = canvasObject.toDataURL();
       }
@@ -87,7 +97,8 @@ export default class ImageDocx {
     const layers = [];
     for (let i = 0; i < this.layers.length; i++) {
       const item = this.layers[i];
-      const base64 = item.targetBase64 || item.contentBase64;
+      
+      const base64 = item.contentUrl || item.contentBase64;
 
       // todo fetch url from base64
       const url = await fakeBase64ToUrl(base64);

@@ -5,14 +5,18 @@ import {
   CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, CROP_ZONE_ID,
 } from '../const';
 import { objects, decorators } from 'util-kit';
+import { loadImage } from 'web-util-kit';
 import { defaultOptions } from '../config/default';
 import Cropper from './cropper';
-import ImageDocx from '../model/image-docx'
+import ImageDocx from '../model/image-docx';
+
+(window as any)._f = fabric;
 
 
 fabric.enableGLFiltering = true;
 fabric.Object.prototype.transparentCorners = false;
 fabric.Object.prototype.padding = 2;
+fabric.Object.prototype.objectCaching = false;
 
 
 export default class LayerController {
@@ -26,7 +30,9 @@ export default class LayerController {
   cropper: Cropper;
   
 
-  // tmp cache cropzone left/top;
+  // for output and preview
+  tmpFCanvas: any;
+  
 
   // config
   options: any = objects.deepClone(defaultOptions);
@@ -45,6 +51,17 @@ export default class LayerController {
 
   constructor(cmp: any, config: any) {
     (window as any)._ctrl = this;
+
+
+    // add to dom for debug.
+    const tmpDiv = document.createElement('div');
+    tmpDiv.style.display = 'none';
+    const canvas = document.createElement('canvas');
+    tmpDiv.appendChild(canvas);
+    document.body.appendChild(tmpDiv);
+    this.tmpFCanvas = new fabric.StaticCanvas(canvas, {});
+
+
 
     this.cmp = cmp;  
     objects.mixin(this.options, config);
@@ -131,7 +148,10 @@ export default class LayerController {
 
   private loadImage(layer, region) {
     return new Promise((resolve, reject) => {
-      const { contentBase64, uid, left, top, width, height, vWidth, vHeight, name } = layer;
+      const { 
+        contentBase64, uid, left, top, width, height, 
+        vWidth, vHeight, name, filter 
+      } = layer;
       fabric.Image.fromURL(contentBase64, (oImg) => {    
         oImg.set({ 
           name, 
@@ -146,10 +166,10 @@ export default class LayerController {
           scaleY: vHeight / height
         });
         oImg.filters = [
-          new fabric.Image.filters.Brightness({brightness: 0}),
-          new fabric.Image.filters.Contrast({contrast: 0}),
-          new fabric.Image.filters.HueRotation({rotation: 0}),
-          new fabric.Image.filters.Saturation({saturation: 0}),   
+          new fabric.Image.filters.Brightness({brightness: filter.brightness}),
+          new fabric.Image.filters.Contrast({contrast: filter.contrast}),
+          new fabric.Image.filters.HueRotation({rotation: filter.hue}),
+          new fabric.Image.filters.Saturation({saturation: filter.saturation}),   
         ];
         this.cropper.setSize({left: region.left, top: region.top, width: region.width, height: region.height});
         this.fCanvas.add(oImg);
@@ -185,11 +205,9 @@ export default class LayerController {
 
   private _fitSize = () => {
     const imgList = this.getAllLayers();
-
     const max_image_width = Math.max(...imgList.map((item: any) => item.width));
     const max_image_height = Math.max(...imgList.map((item: any) => item.height));
     const image_aspect = max_image_width / max_image_height;
-
     const canvasWidth = this.container.clientWidth - CANVAS_PADDING;
     const canvasHeight = this.container.clientHeight - CANVAS_PADDING;
     const canvasAspect = canvasWidth / canvasHeight;
@@ -272,7 +290,6 @@ export default class LayerController {
     this.update();
   }
 
-
   update = () => {
     this.fCanvas.renderAll();
     this.cmp.forceUpdate();
@@ -291,16 +308,11 @@ export default class LayerController {
   exportImage(): Promise<any> {
     const canvasWidth = this.fCanvas.getWidth();
     const canvasHeight = this.fCanvas.getHeight();
-    const canvas = document.createElement('canvas');
-    const tmpFCanvas = new fabric.StaticCanvas(canvas, {
-      preserveObjectStacking: true,
-      enableRetinaScaling: false,
-    });
-    tmpFCanvas.setDimensions({width: canvasWidth, height: canvasHeight});
-
-    // fixme: image load event is out of control
-    // maybe need to clone layer object instead of JSON
-
+    
+    this.tmpFCanvas.clear();
+    this.tmpFCanvas.setDimensions({width: canvasWidth, height: canvasHeight});
+    const layers = this.getAllLayers().map(item => fabric.util.object.clone(item));
+    
     const data = this.fCanvas.toJSON();
     const len = data.objects.length;
     // remove cropper object
@@ -309,10 +321,11 @@ export default class LayerController {
     }
 
     return new Promise((resolve, reject) => {
-      tmpFCanvas.loadFromJSON(data, () => {
+      this.tmpFCanvas.loadFromJSON(data, () => {
+    
         let { left, top, width, height } = this.cropper.getCropperParam();    
         if (this.cropped) {    
-          tmpFCanvas.forEachObject((obj) => {
+          this.tmpFCanvas.forEachObject((obj) => {
             const originLeft = obj.left;
             const originTop = obj.top;
             obj.set({
@@ -320,7 +333,7 @@ export default class LayerController {
               top: originTop - top,
             })
           });
-          tmpFCanvas.setDimensions({
+          this.tmpFCanvas.setDimensions({
             width: width,
             height: height,
           });
@@ -328,21 +341,33 @@ export default class LayerController {
           width = canvasWidth;
           height = canvasHeight;
         }
-    
-        tmpFCanvas.renderAll();
-        
-        // todo need to do sth to make everything is rendered
-        setTimeout(() => {
-          const base64 = tmpFCanvas.toDataURL();
-          resolve({
-            base64,
-            width,
-            height
-          });
-        }, 1000);
-        
-      });
 
+        // tricky way to fix annoy bug in fabric
+
+        const json = this.tmpFCanvas.toJSON();
+
+        this.tmpFCanvas.loadFromJSON(json, () => {
+          this.tmpFCanvas.renderAll();
+
+          this.tmpFCanvas.calcOffset();
+          this.tmpFCanvas.forEachObject(function(o) {
+            o.setCoords();
+          });
+
+          setTimeout(() => {
+          
+
+            const base64 = this.tmpFCanvas.toDataURL();
+            
+            resolve({
+              base64,
+              width,
+              height
+            });
+          }, 0);
+        });
+
+      });   
     }); 
   }
 
@@ -361,14 +386,15 @@ export default class LayerController {
       return undefined;
     }
     this.save();
-    const res = await this.imageDocx.toJSON();
-    return res;
+    const img = await this.exportImage();
+    const json = await this.imageDocx.toJSON();
+    const item = {
+      ...json,
+      previewUrl: img.base64
+    }
+    return item;
   }
-
 }
-
-
-
 
 function async(txt: string = '处理中...') {
   return decorators.createDecorator((fn, key) => {
@@ -385,9 +411,24 @@ function async(txt: string = '处理中...') {
           this.update();
         });
       }
-
       return p;
 
 		};
 	});
 }
+
+
+// function makesureAllImageLoaded(layers) {
+//   return new Promise((resolve, reject) => {
+//     const list = [];
+//     for (let i = 0; i < layers.length; i++) {
+//       const obj = layers[i];
+//       const src = obj.getSrc();
+//       list.push(loadImage(src));
+//     }
+//     Promise.all(list).then(() => {
+//       resolve();
+//     })
+//   })
+
+// }

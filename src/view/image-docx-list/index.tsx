@@ -21,9 +21,21 @@ export interface ImageDocxListProps{
 
 export default class ImageDocxList extends React.Component<ImageDocxListProps>{
 
-  loadIdocx = (data) => {
-    const { layerController } = this.props;
-    layerController.loadIdocx(data);
+  loadIdocx = (item) => {
+    const { layerController, idocxList } = this.props;
+    const uid = layerController.idocxUid;
+    if ( uid === item.uid) {
+      return;
+    }
+    const currentIndex = idocxList.list.findIndex(item => item.uid === uid);
+    layerController.toJSON().then(data => {
+      idocxList.list[currentIndex] = {
+        ...idocxList.list[currentIndex],
+        ...data
+      }
+      layerController.loadIdocx(item);
+    });
+    
   }
 
   render() {
@@ -35,12 +47,13 @@ export default class ImageDocxList extends React.Component<ImageDocxListProps>{
         <div className={styles['doc-list']}>
           {
             idocxList.list.map(item => {
-              const isActive = layerController.originIdocxJSON === item;
+              const isActive = layerController.idocxUid === item.uid;
 
               return (
                 <div 
                   className={classnames({[styles['item']]: true, [styles['active']]: isActive})}
                   onClick={() => this.loadIdocx(item)}
+                  key={item.uid}
                 >
                   <img className={styles['thunbnail']} src={item.previewUrl}/>
                 </div>
