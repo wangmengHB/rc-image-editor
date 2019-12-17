@@ -5,9 +5,8 @@ import { Direction, MIN_SCALE, MIN_POS_VAL, MAX_POS_VAL, ViewMode } from '../../
 import styles from './index.module.less';
 
 const MIN = 0.1;
-const MAX = 4;
+const MAX = 2;
 const PERCENT = 100;
-
 
 
 export interface ParamControlProps{

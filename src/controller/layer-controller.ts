@@ -5,19 +5,15 @@ import {
   CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, CROP_ZONE_ID,
 } from '../const';
 import { objects, decorators } from 'util-kit';
-import { loadImage } from 'web-util-kit';
 import { defaultOptions } from '../config/default';
 import Cropper from './cropper';
 import ImageDocx from '../model/image-docx';
-
-(window as any)._f = fabric;
-
+import IdocxJSONList from '../model/idocx-json-list';
+import {fakeUrlToBase64, fakeBase64ToUrl } from '../util';
 
 fabric.enableGLFiltering = true;
 fabric.Object.prototype.transparentCorners = false;
 fabric.Object.prototype.padding = 2;
-fabric.Object.prototype.objectCaching = false;
-
 
 export default class LayerController {
 
@@ -48,20 +44,36 @@ export default class LayerController {
   // curent image docs
   imageDocx: ImageDocx;
   idocxUid: any;
+  idocxList: IdocxJSONList;
 
-  constructor(cmp: any, config: any) {
+  // util
+  util = {
+    urlToBase64: fakeUrlToBase64,
+    base64ToUrl: fakeBase64ToUrl,
+  }
+
+
+  constructor(cmp: any, config: any, util: any) {
     (window as any)._ctrl = this;
 
 
     // add to dom for debug.
-    const tmpDiv = document.createElement('div');
-    tmpDiv.style.display = 'none';
+    // const tmpDiv = document.createElement('div');
+    // tmpDiv.style.display = 'none';
     const canvas = document.createElement('canvas');
-    tmpDiv.appendChild(canvas);
-    document.body.appendChild(tmpDiv);
+    // tmpDiv.appendChild(canvas);
+    // document.body.appendChild(tmpDiv);
     this.tmpFCanvas = new fabric.StaticCanvas(canvas, {});
 
-
+    if (util) {
+      const { urlToBase64, base64ToUrl} = util;
+      if (typeof urlToBase64 === 'function') {
+        this.util.urlToBase64 = urlToBase64;
+      }
+      if (typeof base64ToUrl === 'function') {
+        this.util.base64ToUrl = base64ToUrl;
+      }
+    }
 
     this.cmp = cmp;  
     objects.mixin(this.options, config);
@@ -118,7 +130,7 @@ export default class LayerController {
   @async('加载中...')
   async loadIdocx(data) {
     this.fCanvas.clear();
-    this.imageDocx = new ImageDocx(data);
+    this.imageDocx = new ImageDocx(data, this.util.urlToBase64, this.util.base64ToUrl);
     this.idocxUid = data.uid;
     await this.imageDocx.build();
     if (!this.imageDocx.region) {
@@ -137,10 +149,31 @@ export default class LayerController {
 
 
   @async('加载中...')
-  async addImage({url, base64, name,}) {  
-    if (!this.imageDocx) {
-      this.imageDocx = new ImageDocx({layers: [], region:{}});
+  async addImage({url, base64, name,}) {
+    const newIdocx = {
+      previewUrl: url || base64,
+      layers: [{ 
+        contentUrl: url || base64
+      }]
+    };
+    if (
+      !this.idocxList || 
+      !Array.isArray(this.idocxList.list) ||
+      this.idocxList.list.length === 0
+    ) {
+      
+      this.idocxList = new IdocxJSONList([newIdocx]);
+      await this.loadIdocx(this.idocxList.list[0]);
+      return;
     }
+    
+    if (!this.imageDocx) {
+      this.idocxList.add(newIdocx);
+      const len = this.idocxList.list.length;
+      await this.loadIdocx(this.idocxList.list[len - 1]);
+      return;
+    }
+
     const docLayer = await this.imageDocx.addImageLayer({ url, base64, name});
     await this.loadImage(docLayer, this.imageDocx.region);
   }
@@ -171,6 +204,7 @@ export default class LayerController {
           new fabric.Image.filters.HueRotation({rotation: filter.hue}),
           new fabric.Image.filters.Saturation({saturation: filter.saturation}),   
         ];
+        // oImg.applyFilters();
         this.cropper.setSize({left: region.left, top: region.top, width: region.width, height: region.height});
         this.fCanvas.add(oImg);
         if (this.cropped) {
@@ -311,8 +345,6 @@ export default class LayerController {
     
     this.tmpFCanvas.clear();
     this.tmpFCanvas.setDimensions({width: canvasWidth, height: canvasHeight});
-    const layers = this.getAllLayers().map(item => fabric.util.object.clone(item));
-    
     const data = this.fCanvas.toJSON();
     const len = data.objects.length;
     // remove cropper object
@@ -355,10 +387,7 @@ export default class LayerController {
           });
 
           setTimeout(() => {
-          
-
             const base64 = this.tmpFCanvas.toDataURL();
-            
             resolve({
               base64,
               width,
@@ -371,7 +400,7 @@ export default class LayerController {
     }); 
   }
 
-  save() {
+  syncIdocx() {
     if (!this.imageDocx) {
       return;
     }
@@ -380,12 +409,12 @@ export default class LayerController {
     this.imageDocx.syncRegion(this.cropper);
   }
 
-  @async('导出中...')
+  @async('保存中...')
   async toJSON() {
     if (!this.imageDocx) {
       return undefined;
     }
-    this.save();
+    this.syncIdocx();
     const img = await this.exportImage();
     const json = await this.imageDocx.toJSON();
     const item = {
@@ -394,6 +423,23 @@ export default class LayerController {
     }
     return item;
   }
+
+  @async('保存中...')
+  async saveCurrentIdocx() {
+    const { idocxUid, imageDocx } = this;  
+    const currentIndex = this.idocxList.list.findIndex(item => item.uid === idocxUid);
+    if (!idocxUid || !imageDocx || currentIndex === -1) {
+      return;
+    }
+    const data = await this.toJSON();    
+    this.idocxList.list[currentIndex] = {
+      ...this.idocxList.list[currentIndex],
+      ...data
+    };
+    this.cmp.forceUpdate();
+    return objects.deepClone(this.idocxList.list[currentIndex]);
+  }
+
 }
 
 function async(txt: string = '处理中...') {
@@ -406,7 +452,7 @@ function async(txt: string = '处理中...') {
         this.loading = true;
         this.loadingTxt = txt;
         this.cmp.forceUpdate();
-        p.finally(() => {
+        Promise.resolve(p).finally(() => {
           this.loading = false;
           this.update();
         });

@@ -14,7 +14,7 @@ document.body.appendChild(root);
 
 const config = {
   forceCrop: true,
-  allowAddLocalImage: false,
+  allowAddLocalImage: true,
 
 }
 
@@ -25,7 +25,7 @@ ReactDOM.render(
   <ImageEditor
     style={{ height: 700}} 
     config={config}
-    idocxList={IMAGE_DOCX_LIST || []}
+    idocxList={ IMAGE_DOCX_LIST || []}
   />,
   root
 )

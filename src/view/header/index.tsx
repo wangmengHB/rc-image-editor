@@ -20,7 +20,6 @@ export interface HeaderProps{
   className?: string;
   style?: React.CSSProperties;
   layerController: any;
-  idocxList: IdocxJSONList;
 }
 
 export default class Header extends React.Component<HeaderProps> {
@@ -67,28 +66,10 @@ export default class Header extends React.Component<HeaderProps> {
   }
 
   save = () => {
-    const { layerController, idocxList } = this.props;
-    const uid = layerController.originIdocxUid;
-    const currentIndex = idocxList.list.findIndex(item => item.uid === uid);
-    if (!uid || !layerController.imageDocx || currentIndex === -1) {
-      return;
-    }
-    layerController.toJSON().then(data => {
-      idocxList.list[currentIndex] = {
-        ...idocxList.list[currentIndex],
-        ...data
-      }
-      // layerController.loadIdocx(idocxList.list[currentIndex]);
-    });
-
-
-    
-    Promise.resolve(layerController.toJSON())
-      .then(obj => {
-        console.log(obj);
-        alert(JSON.stringify(obj));
-        test = obj;
-      }); 
+    const { layerController } = this.props;
+    layerController.saveCurrentIdocx().then(data => {
+      console.log('save result', data);
+    }); 
   }
 
   loadLocalImage = e => {

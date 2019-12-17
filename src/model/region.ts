@@ -12,7 +12,7 @@ export default class Region {
   // targetWidth: number = 0;
   // targetHeight: number = 0;
 
-  constructor(json ) {
+  constructor(json) {
     const data = json || {};
     const { x , y, vWidth, vHeight} = data;
     this.left = x || 0;

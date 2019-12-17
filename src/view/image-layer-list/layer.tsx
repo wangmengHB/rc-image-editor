@@ -55,8 +55,13 @@ export default class Layer extends React.Component<LayerProps>{
             }}
           />
           <div className={styles['info']}>
-            <span>名称:</span>
-            <span>{name}</span>
+            { name? (
+                <div>
+                  <span>名称:</span>
+                  <span>{name}</span>
+                </div>
+              ): null
+            }            
           </div>   
         </div>
         <ActionControl isActive={isActive} item={item} layerController={layerController} />

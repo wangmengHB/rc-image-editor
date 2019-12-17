@@ -1,4 +1,5 @@
 import { numbers, arrays, generateUuid, asyncs, objects } from 'util-kit';
+import { getImageSize } from '../util';
 
 const { clamp } = numbers;
 
@@ -36,10 +37,10 @@ export default class Layer {
   name: string;
 
   // target data
-  targetUrl: string;
-  targetBase64: string;
+  targetUrl: string | undefined;
+  targetBase64: string | undefined;
 
-  constructor(json: any = {}) {
+  constructor(json: any = {}, private urlToBase64: Function, private base64ToUrl: Function) {
     const { contentUrl, contentBase64, x, y, vWidth, vHeight, name, filter} = json;
     if (!contentUrl && !contentBase64) {
       throw new Error('layer has no image source!');
@@ -53,7 +54,7 @@ export default class Layer {
     this.uid = generateUuid();
     this.name = name || '';
     if (filter) {
-      this.initialFilter(filter);
+      this.syncFilter(filter);
     }
   }
 
@@ -64,7 +65,7 @@ export default class Layer {
     // otherwise canvas can not read pixel data from cross-origin image
     
     if (!this.contentBase64) {
-      this.contentBase64 = await fakeUrlToBase64(this.contentUrl);
+      this.contentBase64 = await this.urlToBase64(this.contentUrl);
     }
     if (this.width <= 0 || this.height <= 0) {
       const {width, height} = await getImageSize(this.contentBase64);
@@ -86,11 +87,30 @@ export default class Layer {
 
   }
 
-  initialFilter(filter = {}) {
-    const keys = Object.keys(filter);
+  syncFilter(filter = {}) {
+    if (filter === null || filter === undefined || typeof filter !== 'object') {
+      return;
+    }
+    let res: any = {};
+    if (Array.isArray(filter)) {
+      filter.forEach(item => {
+        const iKeys = Object.keys(item);
+        iKeys.forEach(key => {
+          res[key] = item[key];
+        });
+      })
+    } else {
+      res = {...filter};
+    }
+    
+    const keys = Object.keys(res);
     keys.forEach(key => {
-      if (typeof filter[key] === 'number') {
-        this.filter[key] = clamp(filter[key], -1, 1);
+      if (typeof res[key] === 'number') {
+        let alias = key;
+        if (key === 'rotation') {
+          alias = 'hue';
+        }
+        this.filter[alias] = clamp(res[key], -1, 1);
       }
     })
   }
@@ -98,39 +118,8 @@ export default class Layer {
 }
 
 
-function fakeUrlToBase64(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image(); 
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-      resolve(canvas.toDataURL());
-    }
-    img.src = url;
-  });
-}
 
 
-function getImageSize(base64): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const img = new Image(); 
-    img.onload = () => {
-      // const canvas = document.createElement('canvas');
-      // canvas.width = img.width;
-      // canvas.height = img.height;
-      // const ctx = canvas.getContext('2d');
-      // ctx.drawImage(img, 0, 0, img.width, img.height);
-      
-      const data = {
-        width: img.width,
-        height: img.height,
-      }
-      resolve(data);
-    }
-    img.src = base64;
-  });
-}
+
+
 

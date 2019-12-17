@@ -7,16 +7,16 @@ export default class ImageDocx {
   previewUrl: string;
 
   layers: Layer[] = [];
-  region: Region | null;
+  region: Region;
 
   _intialized: boolean = false;
 
-  constructor(json) {
+  constructor(json, private urlToBase64: Function, private base64ToUrl: Function) {
     const { layers, region, previewUrl } = json;
     if (!Array.isArray(layers)) {
       throw new Error('layers must be an array!');
     }
-    this.layers = layers.map(item => new Layer(item));
+    this.layers = layers.map(item => new Layer(item, this.urlToBase64, this.base64ToUrl));
     this.region = new Region(region);
     this.previewUrl = previewUrl;
     this._intialized = false;
@@ -38,7 +38,7 @@ export default class ImageDocx {
       contentUrl: url,
       contentBase64: base64,
       name
-    });
+    }, this.urlToBase64, this.base64ToUrl);
     await layer.build(); 
     this.layers.push(layer);
     this.region.checkSize(
@@ -49,7 +49,7 @@ export default class ImageDocx {
   }
 
   syncCanvasObjects(layers: any[]) {
-    const _layers = [];
+    const _layers: any[] = [];
     layers.forEach(canvasObject => {
       const {
         uid, left, top, width, height, 
@@ -65,6 +65,8 @@ export default class ImageDocx {
       target.height = height;
       target.vWidth = width * scaleX;
       target.vHeight = height * scaleY;
+
+      target.syncFilter(filters);
 
       let pixelUnChanged = filters.every((item) => {
         const keys = Object.keys(item);
@@ -94,20 +96,20 @@ export default class ImageDocx {
 
 
   async toJSON() {
-    const layers = [];
+    const layers: any[] = [];
     for (let i = 0; i < this.layers.length; i++) {
       const item = this.layers[i];
       
       const base64 = item.contentUrl || item.contentBase64;
 
-      // todo fetch url from base64
-      const url = await fakeBase64ToUrl(base64);
+      const url = await this.base64ToUrl(base64);
 
       layers.push({
         x: item.left,
         y: item.top,
         vWidth: item.vWidth,
         vHeight: item.vHeight,
+        filter: item.filter,
         contentUrl: url
       });
     }
@@ -129,16 +131,6 @@ export default class ImageDocx {
 }
 
 
-function fakeBase64ToUrl(base64) {
-  return new Promise((resolve, reject) => {
 
-    setTimeout(() => {
-      const url = base64;
-      resolve(url);
-    }, 100)
-
-  })
-
-}
 
 

@@ -13,4 +13,13 @@ export default class IdocxJSONList {
     });
   }
 
+  add(item) {
+    this.list.push({
+      ...item,
+      uid: generateUuid(),
+    })
+
+  }
+
+
 }

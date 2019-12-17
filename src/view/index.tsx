@@ -8,7 +8,6 @@ import LayerController from '../controller/layer-controller';
 import classnames from 'classnames';
 import styles from './index.module.less';
 import { ImageEditorConfig } from '../interface';
-import { numbers, arrays, generateUuid, asyncs, objects, decorators } from 'util-kit';
 import IdocxJSONList from '../model/idocx-json-list';
 
 
@@ -18,47 +17,52 @@ export interface ImageEditorProps {
   style?: React.CSSProperties;
   config: ImageEditorConfig;
   idocxList: any[];
+  // fix the cross-origin image issue
+  urlToBase64?: Function;
+  // reduce the size of output url
+  base64ToUrl?: Function;
 }
 
 export interface ImageEditorState {
   layerController: LayerController;
-  idocxList: IdocxJSONList;
 }
 
 
 export default class ImageEditorView extends React.Component<ImageEditorProps, ImageEditorState> {
 
-  
-
   constructor(props: ImageEditorProps) {
     super(props);
-    const { config, idocxList } = props;
+    const { config, idocxList, urlToBase64,  base64ToUrl} = props;
+    const util = {
+      urlToBase64,
+      base64ToUrl,
+    };
+    const layerController = new LayerController(this, config, util);
+    const imageDocxList = new IdocxJSONList(idocxList || []);
+    layerController.idocxList = imageDocxList;
     this.state = {
-      layerController: new LayerController(this, config),
-      idocxList: new IdocxJSONList(idocxList),
+      layerController,
     }
   }
 
   componentDidMount() {
-    const { layerController, idocxList } = this.state;
-    if (idocxList.list.length > 0 && !layerController.imageDocx) {
+    const { layerController } = this.state;
+    const { idocxList } = layerController;
+    if (idocxList && idocxList.list.length > 0 && !layerController.imageDocx) {
       layerController.loadIdocx(idocxList.list[0]);
     }
   }
 
-
-
   render() {
     const { className, style} = this.props;
-    const { layerController, idocxList } = this.state;
-
+    const { layerController } = this.state;
+    
     return (
       <Spin spinning={layerController.loading} tip="处理中...">
         <div className={classnames([styles['image-editor'], className])} style={style}>
           <Header 
             className={styles['header']} 
             layerController={layerController}
-            idocxList={idocxList}
           />
           <div className={styles['main']}>
             <ImageLayerList 
@@ -68,7 +72,6 @@ export default class ImageEditorView extends React.Component<ImageEditorProps, I
             <ImageDocxList 
               className={styles['doc-list']}
               layerController={layerController}
-              idocxList={idocxList}
             />
 
             <WorkCanvas 

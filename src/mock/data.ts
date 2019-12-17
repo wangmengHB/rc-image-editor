@@ -25,10 +25,10 @@ const IDOCX_1 = {
     },
   ],
   region: {
-    x: 200,
-    y: 300,
+    x: 100,
+    y: 100,
     vHeight: 400,
-    vWidth: 400,
+    vWidth: 800,
   }
 };
 

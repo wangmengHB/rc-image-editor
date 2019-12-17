@@ -15,14 +15,14 @@ export interface ImageDocxListProps{
   className?: string;
   style?: React.CSSProperties;
   layerController: any;
-  idocxList: IdocxJSONList;
 }
 
 
 export default class ImageDocxList extends React.Component<ImageDocxListProps>{
 
   loadIdocx = (item) => {
-    const { layerController, idocxList } = this.props;
+    const { layerController } = this.props;
+    const { idocxList } = layerController;
     const uid = layerController.idocxUid;
     if ( uid === item.uid) {
       return;
@@ -39,14 +39,21 @@ export default class ImageDocxList extends React.Component<ImageDocxListProps>{
   }
 
   render() {
-    const { layerController, className, style, idocxList } = this.props;
+    const { layerController, className, style } = this.props;
+    const { idocxList } = layerController;
+    console.log(idocxList);
+
+    let list = [];
+    if (idocxList && Array.isArray(idocxList.list)) {
+      list = idocxList.list;
+    }
     
     return (
       <div className={classnames([styles['doc-list-panel'], className])} style={style}>
         <div className={styles['title']}>文件列表</div>
         <div className={styles['doc-list']}>
           {
-            idocxList.list.map(item => {
+            list.map(item => {
               const isActive = layerController.idocxUid === item.uid;
 
               return (
