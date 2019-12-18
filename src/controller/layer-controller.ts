@@ -183,7 +183,7 @@ export default class LayerController {
     return new Promise((resolve, reject) => {
       const { 
         contentBase64, uid, left, top, width, height, 
-        vWidth, vHeight, name, filter 
+        scaleX, scaleY, name, filter 
       } = layer;
       fabric.Image.fromURL(contentBase64, (oImg) => {    
         oImg.set({ 
@@ -195,8 +195,8 @@ export default class LayerController {
           top,
           width,
           height,
-          scaleX: vWidth / width,
-          scaleY: vHeight / height
+          scaleX: scaleX,
+          scaleY: scaleY,
         });
         oImg.filters = [
           new fabric.Image.filters.Brightness({brightness: filter.brightness}),

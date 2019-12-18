@@ -1,3 +1,4 @@
+import { objects, decorators } from 'util-kit';
 
 export function fakeBase64ToUrl(base64) {
   return new Promise((resolve, reject) => {
@@ -40,4 +41,24 @@ export function getImageSize(base64): Promise<any> {
   });
 }
 
+export function async(txt: string = '处理中...') {
+  return decorators.createDecorator((fn, key) => {
+		return function (this: any, ...args: any[]) {
+      
+      const p = fn.apply(this, args);
+
+      if (p && typeof p.then === 'function') {
+        this.loading = true;
+        this.loadingTxt = txt;
+        this.cmp.forceUpdate();
+        Promise.resolve(p).finally(() => {
+          this.loading = false;
+          this.update();
+        });
+      }
+      return p;
+
+		};
+	});
+}
 
