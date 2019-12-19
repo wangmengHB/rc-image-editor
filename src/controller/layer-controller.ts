@@ -9,7 +9,7 @@ import { defaultOptions } from '../config/default';
 import Cropper from './cropper';
 import ImageDocx from '../model/image-docx';
 import IdocxJSONList from '../model/idocx-json-list';
-import {fakeUrlToBase64, fakeBase64ToUrl } from '../util';
+import {fakeUrlToBase64, fakeBase64ToUrl, async } from '../util';
 
 fabric.enableGLFiltering = true;
 fabric.Object.prototype.transparentCorners = false;
@@ -442,39 +442,3 @@ export default class LayerController {
 
 }
 
-function async(txt: string = '处理中...') {
-  return decorators.createDecorator((fn, key) => {
-		return function (this: any, ...args: any[]) {
-      
-      const p = fn.apply(this, args);
-
-      if (p && typeof p.then === 'function') {
-        this.loading = true;
-        this.loadingTxt = txt;
-        this.cmp.forceUpdate();
-        Promise.resolve(p).finally(() => {
-          this.loading = false;
-          this.update();
-        });
-      }
-      return p;
-
-		};
-	});
-}
-
-
-// function makesureAllImageLoaded(layers) {
-//   return new Promise((resolve, reject) => {
-//     const list = [];
-//     for (let i = 0; i < layers.length; i++) {
-//       const obj = layers[i];
-//       const src = obj.getSrc();
-//       list.push(loadImage(src));
-//     }
-//     Promise.all(list).then(() => {
-//       resolve();
-//     })
-//   })
-
-// }
