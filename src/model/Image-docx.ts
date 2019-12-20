@@ -68,19 +68,19 @@ export default class ImageDocx {
 
       target.syncFilter(filters);
 
-      let pixelUnChanged = filters.every((item) => {
-        const keys = Object.keys(item);
-        return keys.every(key => {
-          if (typeof item[key] === 'number') {
-            return item[key] === 0;
-          }
-          return true;
-        })
-      });
+      // let pixelUnChanged = filters.every((item) => {
+      //   const keys = Object.keys(item);
+      //   return keys.every(key => {
+      //     if (typeof item[key] === 'number') {
+      //       return item[key] === 0;
+      //     }
+      //     return true;
+      //   })
+      // });
 
-      if (!pixelUnChanged) {
-        target.targetBase64 = canvasObject.toDataURL();
-      }
+      // if (!pixelUnChanged) {
+      //   target.targetBase64 = canvasObject.toDataURL({format: 'jpeg', quality: 0.5});
+      // }
       _layers.push(target);
     });
     this.layers = _layers;

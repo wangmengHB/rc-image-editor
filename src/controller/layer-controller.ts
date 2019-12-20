@@ -387,7 +387,13 @@ export default class LayerController {
           });
 
           setTimeout(() => {
-            const base64 = this.tmpFCanvas.toDataURL();
+
+            // if output is base64, the output size may be huge
+            // but if output is jpeg, the alpha of the total image will be losed
+            const base64 = this.tmpFCanvas.toDataURL({format: 'png', quality: 1});
+
+            console.log('size:', ((base64.length / 1024) / 1024) );
+
             resolve({
               base64,
               width,
