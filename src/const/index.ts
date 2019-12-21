@@ -18,6 +18,8 @@ export const MIN_POS_VAL = -MAX_POS_VAL;
 
 export const CROP_ZONE_ID = 'crop_zone_id';
 
+export const PRECISION_SCENE_RATIO = 0.001;
+
 
 export const CROP_STYLE = Object.freeze({
   borderColor: "#fff",

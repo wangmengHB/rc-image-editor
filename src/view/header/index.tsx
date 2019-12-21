@@ -26,51 +26,44 @@ export default class Header extends React.Component<HeaderProps> {
 
   changeMode = e => {
     const checked = e.target.checked;
-    const { layerController } = this.props;  
+    const { layerController } = this.props;
     if (checked) {
       layerController.setViewMode(ViewMode.Crop);
     } else {
       layerController.setViewMode(ViewMode.Normal);
     }
-  }
+  };
 
-  enableCropper = e => {
-    const checked = e.target.checked;
+  setSpecification = name => {
     const { layerController } = this.props;
-    const res = layerController.enableCropper(checked);
-    if (!res) {
-      message.error('当前没有图片！')
-    }
-  }
+    layerController.setCropperSpecification(name, true);
+  };
 
   setCropperParam = (type, val) => {
     const { layerController } = this.props;
     layerController.setCropperParam(type, val);
-  }
-
+  };
 
   exportImage = () => {
     const { layerController } = this.props;
-    layerController.exportImage().then(({base64, width, height}) => {
+    layerController.exportImage().then(({ base64, width, height }) => {
       Modal.confirm({
         title: '预览',
         width: 600,
         content: (
           <div>
             <div>图片尺寸: {`${width} * ${height}`}</div>
-            <img style={{maxWidth: 500, border: '1px solid black'}} src={base64}/>
+            <img style={{ maxWidth: 500, border: '1px solid black' }} src={base64} />
           </div>
-        )
-      })
-    });  
-  }
+        ),
+      });
+    });
+  };
 
   save = () => {
     const { layerController } = this.props;
-    layerController.saveCurrentIdocx().then(data => {
-      console.log('save result', data);
-    }); 
-  }
+    return layerController.saveCurrentIdocx();
+  };
 
   loadLocalImage = e => {
     const { layerController } = this.props;
@@ -78,26 +71,26 @@ export default class Header extends React.Component<HeaderProps> {
     const filename = e.target.files[0].name;
     reader.onload = (e: any) => {
       const base64: any = e.target.result;
-      layerController.addImage({base64, name: filename});
+      layerController.addImage({ base64, name: filename });
       (this.refs.file as any).value = null;
     };
-    reader.readAsDataURL(e.target.files[0]); 
-  }
+    reader.readAsDataURL(e.target.files[0]);
+  };
 
   openFileDialog = () => {
     (this.refs.file as any).click();
-  }
+  };
 
-  changeZoom = (val) => {
+  changeZoom = val => {
     const { layerController } = this.props;
     layerController.setScale(val);
     this.forceUpdate();
-  }
+  };
 
-  changeDimension = (type, val) => {
+  outputIdocxList = () => {
     const { layerController } = this.props;
-    layerController.changeDimension(type, val);
-  }
+    return layerController.outputIdocxList();
+  };
 
   render() {    
     const { layerController, className, style } = this.props;
@@ -146,7 +139,7 @@ export default class Header extends React.Component<HeaderProps> {
           <Divider className={styles['divider']} type="vertical"/>
 
           <div className={styles['column-item']}>
-            {
+            {/* {
               !forceCrop? (
                 <div className={styles['sub-item']}>
                   <Checkbox 
@@ -159,7 +152,7 @@ export default class Header extends React.Component<HeaderProps> {
                   </Checkbox>
                 </div>
               ): null
-            }
+            } */}
             
             <div className={styles['sub-item']}>
               <Checkbox 
@@ -274,7 +267,7 @@ export default class Header extends React.Component<HeaderProps> {
 
           <Divider className={styles['divider']} type="vertical"/>
 
-          <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
+          {/* <div className={styles['column-item']} style={{width: PARAM_ITEM_WIDTH}}>
             <div className={styles['param-item']}>
               <div className={styles['label']}>画布宽:</div>
               <InputNumber 
@@ -298,7 +291,7 @@ export default class Header extends React.Component<HeaderProps> {
               />
               
             </div>
-          </div>
+          </div> */}
 
           
           <div className={styles['label']} style={{marginLeft: 10}}>缩放:</div>

@@ -8,6 +8,8 @@ export const defaultOptions = Object.freeze({
   cropLockUniScaling: false,
   allowAddLocalImage: true,
 
+  autoSave: true,
+
   devMode: true,
 
 });

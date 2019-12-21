@@ -1,15 +1,13 @@
 import { IdocxJSON } from '../interface';
 import { numbers, arrays, generateUuid, asyncs, objects, decorators } from 'util-kit';
 
-
 export default class IdocxJSONList {
-
-  list:IdocxJSON[] = [];
+  list: IdocxJSON[] = [];
 
   constructor(list: any[]) {
     this.list = list.map(item => {
       const uid = item.uid || generateUuid();
-      return { ...item, uid};
+      return { ...item, uid };
     });
   }
 
@@ -17,9 +15,10 @@ export default class IdocxJSONList {
     this.list.push({
       ...item,
       uid: generateUuid(),
-    })
-
+    });
   }
 
-
+  empty() {
+    return this.list.length === 0;
+  }
 }

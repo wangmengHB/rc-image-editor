@@ -1,22 +1,25 @@
 import { fabric } from 'fabric';
-import { 
-  CANVAS_MAX_WIDTH, CANVAS_MAX_HEIGHT, CROP_STYLE,
-  ViewMode, CANVAS_PADDING, 
-  CANVAS_INIT_WIDTH, CANVAS_INIT_HEIGHT, CROP_ZONE_ID,
+import {
+  CANVAS_MAX_WIDTH,
+  CANVAS_MAX_HEIGHT,
+  ViewMode,
+  CANVAS_PADDING,
+  CANVAS_INIT_WIDTH,
+  CANVAS_INIT_HEIGHT,
+  PRECISION_SCENE_RATIO,
 } from '../const';
 import { objects, decorators } from 'util-kit';
 import { defaultOptions } from '../config/default';
 import Cropper from './cropper';
 import ImageDocx from '../model/image-docx';
 import IdocxJSONList from '../model/idocx-json-list';
-import {fakeUrlToBase64, fakeBase64ToUrl, async } from '../util';
+import { fakeUrlToBase64, fakeBase64ToUrl, async } from '../util';
 
 fabric.enableGLFiltering = true;
 fabric.Object.prototype.transparentCorners = false;
 fabric.Object.prototype.padding = 2;
 
 export default class LayerController {
-
   fCanvas: any;
   container: any;
   cmp: any;
@@ -24,49 +27,42 @@ export default class LayerController {
   scale: number = 1;
   viewMode: ViewMode;
   cropper: Cropper;
-  
 
   // for output and preview
   tmpFCanvas: any;
-  
 
   // config
   options: any = objects.deepClone(defaultOptions);
 
-
-  // state 
+  // state
   // whether apply crop
   cropped: boolean = true;
   loading: boolean = false;
-  loadingTxt: string = '处理中...';
-
+  loadingTxt: string = '请稍候...';
 
   // curent image docs
-  imageDocx: ImageDocx;
+  imageDocx: ImageDocx | undefined;
   idocxUid: any;
-  idocxList: IdocxJSONList;
+  idocxList: IdocxJSONList | undefined;
 
   // util
   util = {
     urlToBase64: fakeUrlToBase64,
     base64ToUrl: fakeBase64ToUrl,
-  }
+  };
 
+  // 规范线
+  sceneSpecificationOptions: any[] = [];
+  scene: string = 'auto';
 
   constructor(cmp: any, config: any, util: any) {
     (window as any)._ctrl = this;
 
-
-    // add to dom for debug.
-    // const tmpDiv = document.createElement('div');
-    // tmpDiv.style.display = 'none';
     const canvas = document.createElement('canvas');
-    // tmpDiv.appendChild(canvas);
-    // document.body.appendChild(tmpDiv);
     this.tmpFCanvas = new fabric.StaticCanvas(canvas, {});
 
     if (util) {
-      const { urlToBase64, base64ToUrl} = util;
+      const { urlToBase64, base64ToUrl } = util;
       if (typeof urlToBase64 === 'function') {
         this.util.urlToBase64 = urlToBase64;
       }
@@ -75,7 +71,7 @@ export default class LayerController {
       }
     }
 
-    this.cmp = cmp;  
+    this.cmp = cmp;
     objects.mixin(this.options, config);
 
     this.cropped = this.options.forceCrop;
@@ -83,24 +79,22 @@ export default class LayerController {
     const node = document.createElement('canvas');
     node.width = CANVAS_INIT_WIDTH;
     node.height = CANVAS_INIT_HEIGHT;
-    
+
     this.fCanvas = new fabric.Canvas(node, {
       preserveObjectStacking: true,
       enableRetinaScaling: false,
       selection: false,
       containerClass: 'image-editor-canvas-container',
     });
-    
+
     // always show latest state
     this.fCanvas.on('mouse:up', () => {
-      console.log('mouse:up');
       this.cmp.forceUpdate();
     });
-    
+
     this.fCanvas.on('object:modified', () => {
-      console.log('object modified');
       this.cmp.forceUpdate();
-    })
+    });
 
     this.cropper = new Cropper(this.fCanvas);
     this.viewMode = ViewMode.Normal;
@@ -111,83 +105,113 @@ export default class LayerController {
     this.container = container;
   }
 
-  enableCropper(enable) {
-    if (!this.imageDocx) {
-      return false;
-    }
-    this.cropped = enable;
-    if (enable) {
-      this.addCropzone();
-    } else {
-      this.setViewMode(ViewMode.Normal);
-      // remove action will lose left/top pos
-      this.fCanvas.remove(this.cropper.cropzone);
-    }
-    this.update();
-    return true;
-  }
-
   @async('加载中...')
   async loadIdocx(data) {
+    if (!data || this.idocxUid === data.uid || !this.idocxList || this.idocxList.empty()) {
+      return;
+    }
+    // save current before load new if needed
+    if (this.options.autoSave) {
+      const currentIndex = this.idocxList.list.findIndex(item => item.uid === this.idocxUid);
+      const currentRes = await this.saveIdocxToJSON();
+      this.idocxList.list[currentIndex] = {
+        ...this.idocxList.list[currentIndex],
+        ...currentRes,
+      };
+      this.loading = true;
+      this.loadingTxt = '加载中...';
+      this.cmp.forceUpdate();
+    }
+
+    const prevMode = this.viewMode;
+    const prevScene = this.scene;
+
+    this.setViewMode(ViewMode.Normal);
+    this.setCropperSpecification('auto');
+
     this.fCanvas.clear();
     this.imageDocx = new ImageDocx(data, this.util.urlToBase64, this.util.base64ToUrl);
     this.idocxUid = data.uid;
     await this.imageDocx.build();
-    if (!this.imageDocx.region) {
-      this.cropped = false;
-    } else {
-      this.cropped = true;
-      // set cropzone
-      const {left, top, width, height } = this.imageDocx.region;
-      this.cropper.setSize({left, top, width, height});
-    }
+
+    this.cropped = true;
+    const { left, top, width, height, auto } = this.imageDocx.region;
+    this.cropper.setSize({ left, top, width, height });
+    this.cropper.auto = auto;
+
     for (let i = 0; i < this.imageDocx.layers.length; i++) {
       const docLayer = this.imageDocx.layers[i];
       await this.loadImage(docLayer, this.imageDocx.region);
     }
+    this.setViewMode(prevMode);
+
+    if (this.cropper.auto) {
+      return this.setCropperSpecification(prevScene);
+    }
+
+    // find the nearset scene
+    const curretRatio = width / height;
+    const targetScene = this.sceneSpecificationOptions.find(
+      item => Math.abs(item.ratioNum - curretRatio) <= PRECISION_SCENE_RATIO,
+    );
+    if (targetScene && targetScene.name) {
+      this.setCropperSpecification(targetScene.name);
+    } else {
+      this.setCropperSpecification('auto');
+    }
   }
 
-
   @async('加载中...')
-  async addImage({url, base64, name,}) {
+  async addImage({ url, base64, name }) {
+    const noIdocxList = !this.idocxList || this.idocxList.empty();
+    const noIdocx = !this.imageDocx;
+    if (!this.options.allowAddNewIdocx) {
+      if (noIdocx || noIdocxList) {
+        return;
+      }
+    }
+
     const newIdocx = {
       previewUrl: url || base64,
-      layers: [{ 
-        contentUrl: url || base64
-      }]
+      layers: [
+        {
+          contentUrl: url,
+          contentBase64: base64,
+        },
+      ],
     };
-    if (
-      !this.idocxList || 
-      !Array.isArray(this.idocxList.list) ||
-      this.idocxList.list.length === 0
-    ) {
-      
+
+    if (noIdocxList) {
       this.idocxList = new IdocxJSONList([newIdocx]);
       await this.loadIdocx(this.idocxList.list[0]);
       return;
     }
-    
-    if (!this.imageDocx) {
+
+    if (this.idocxList && noIdocx) {
       this.idocxList.add(newIdocx);
       const len = this.idocxList.list.length;
       await this.loadIdocx(this.idocxList.list[len - 1]);
       return;
     }
 
-    const docLayer = await this.imageDocx.addImageLayer({ url, base64, name});
-    await this.loadImage(docLayer, this.imageDocx.region);
-  }
+    if (!this.imageDocx) {
+      return;
+    }
 
+    const prevMode = this.viewMode;
+    this.setViewMode(ViewMode.Normal);
+
+    const docLayer = await this.imageDocx.addImageLayer({ url, base64, name });
+    await this.loadImage(docLayer, this.imageDocx.region);
+    this.setViewMode(prevMode);
+  }
 
   private loadImage(layer, region) {
     return new Promise((resolve, reject) => {
-      const { 
-        contentBase64, uid, left, top, width, height, 
-        scaleX, scaleY, name, filter 
-      } = layer;
-      fabric.Image.fromURL(contentBase64, (oImg) => {    
-        oImg.set({ 
-          name, 
+      const { contentBase64, uid, left, top, width, height, scaleX, scaleY, name, filter } = layer;
+      fabric.Image.fromURL(contentBase64, oImg => {
+        oImg.set({
+          name,
           uid,
           lockUniScaling: this.options.imageLockUniScaling,
           lockRotation: this.options.imageLockRotation,
@@ -199,13 +223,18 @@ export default class LayerController {
           scaleY: scaleY,
         });
         oImg.filters = [
-          new fabric.Image.filters.Brightness({brightness: filter.brightness}),
-          new fabric.Image.filters.Contrast({contrast: filter.contrast}),
-          new fabric.Image.filters.HueRotation({rotation: filter.hue}),
-          new fabric.Image.filters.Saturation({saturation: filter.saturation}),   
+          new fabric.Image.filters.Brightness({ brightness: filter.brightness }),
+          new fabric.Image.filters.Contrast({ contrast: filter.contrast }),
+          new fabric.Image.filters.HueRotation({ rotation: filter.hue }),
+          new fabric.Image.filters.Saturation({ saturation: filter.saturation }),
         ];
-        // oImg.applyFilters();
-        this.cropper.setSize({left: region.left, top: region.top, width: region.width, height: region.height});
+        oImg.applyFilters();
+        this.cropper.setSize({
+          left: region.left,
+          top: region.top,
+          width: region.width,
+          height: region.height,
+        });
         this.fCanvas.add(oImg);
         if (this.cropped) {
           this.addCropzone();
@@ -214,28 +243,26 @@ export default class LayerController {
         this.update();
         resolve(this);
       });
-    })
+    });
   }
-
 
   addCropzone() {
     const objs = this.fCanvas.getObjects();
     if (objs.length === 0) {
       return;
-    } 
+    }
     const cropzone = objs.find(item => item === this.cropper.cropzone);
     if (!cropzone) {
       this.fCanvas.add(this.cropper.cropzone);
       // todo recover previor left / top for cropzone
       this.cropper.reset();
-    }  
+    }
     if (this.viewMode === ViewMode.Crop) {
       this.cropper.activeCropView();
     } else {
       this.cropper.activeNormalView();
     }
   }
-
 
   private _fitSize = () => {
     const imgList = this.getAllLayers();
@@ -248,7 +275,7 @@ export default class LayerController {
 
     let zoom = 1;
     if (image_aspect < canvasAspect) {
-      zoom = canvasHeight / max_image_height; 
+      zoom = canvasHeight / max_image_height;
     } else {
       zoom = canvasWidth / max_image_width;
     }
@@ -261,9 +288,9 @@ export default class LayerController {
     this.update();
     this.fCanvas._setCssDimension('width', `${max_image_width * this.scale}px`);
     this.fCanvas._setCssDimension('height', `${max_image_height * this.scale}px`);
-  }
+  };
 
-  setScale = (scale) => {
+  setScale = scale => {
     if (typeof scale !== 'number') {
       return;
     }
@@ -271,9 +298,8 @@ export default class LayerController {
     const pixelHeight = this.fCanvas.getHeight();
     this.scale = scale;
     this.fCanvas._setCssDimension('width', `${pixelWidth * this.scale}px`);
-    this.fCanvas._setCssDimension('height', `${pixelHeight * this.scale}px`); 
-  }
-
+    this.fCanvas._setCssDimension('height', `${pixelHeight * this.scale}px`);
+  };
 
   getAllLayers() {
     const objects = this.fCanvas.getObjects() || [];
@@ -294,14 +320,50 @@ export default class LayerController {
     this.update();
   }
 
+  setCropperSpecification(name: string, inital = false) {
+    if (this.scene === name) {
+      return;
+    }
+    this.scene = name;
+    const opt = this.sceneSpecificationOptions.find(opt => opt.name === name);
+    if (!opt) {
+      // remove image element from cropper and unlock uniscale
+      this.cropper.removeCropperBgImage();
+      return;
+    }
+    const { ratioNum, base64 } = opt;
+    let { left, top, width, height } = this.cropper;
+    const canvasWidth = this.fCanvas.getWidth();
+    const canvasHeight = this.fCanvas.getHeight();
+    if (this.cropper.auto) {
+      const canvasRatio = canvasWidth / canvasHeight;
+      if (canvasRatio > ratioNum) {
+        height = canvasHeight;
+        width = Math.ceil(canvasHeight * ratioNum);
+      } else {
+        width = canvasWidth;
+        height = Math.ceil(canvasWidth / ratioNum);
+      }
+      left = Math.ceil((canvasWidth - width) / 2);
+      top = Math.ceil((canvasHeight - height) / 2);
+    } else {
+      width = Math.ceil(height * ratioNum);
+    }
+
+    this.cropper.addCropperBgImage(base64, { left, top, width, height });
+    this.update();
+  }
+
   setViewMode(mode) {
     const prevMode = this.viewMode;
     if (prevMode === mode) {
       return;
     }
     this.viewMode = mode;
+    this.fCanvas.discardActiveObject();
+    this.fCanvas.renderAll();
     if (mode === ViewMode.Crop) {
-      this.cropper.activeCropView();    
+      this.cropper.activeCropView();
     } else {
       this.cropper.activeNormalView();
     }
@@ -309,32 +371,39 @@ export default class LayerController {
   }
 
   getSize() {
+    if (!this.imageDocx) {
+      return [0, 0];
+    }
     const width = this.fCanvas.getWidth();
     const height = this.fCanvas.getHeight();
     return [width, height];
   }
 
-  getZoom() {
-    return this.fCanvas.getZoom();
-  }
-
   changeDimension(type, val) {
-    this.fCanvas.setDimensions({[type]: val});
+    this.fCanvas.setDimensions({ [type]: val });
     this.setScale(this.scale);
     this.update();
   }
 
   update = () => {
     this.fCanvas.renderAll();
-    this.cmp.forceUpdate();
-  }
+    setTimeout(() => {
+      this.cmp.forceUpdate();
+    });
+  };
 
   getCropperParam() {
+    if (!this.imageDocx) {
+      return { left: 0, top: 0, width: 0, height: 0 };
+    }
     return this.cropper.getCropperParam();
   }
 
   setCropperParam(type, val) {
-    this.cropper.setSize({[type]: val});
+    if (!this.imageDocx) {
+      return;
+    }
+    this.cropper.setSize({ [type]: val });
     this.update();
   }
 
@@ -342,9 +411,9 @@ export default class LayerController {
   exportImage(): Promise<any> {
     const canvasWidth = this.fCanvas.getWidth();
     const canvasHeight = this.fCanvas.getHeight();
-    
+
     this.tmpFCanvas.clear();
-    this.tmpFCanvas.setDimensions({width: canvasWidth, height: canvasHeight});
+    this.tmpFCanvas.setDimensions({ width: canvasWidth, height: canvasHeight });
     const data = this.fCanvas.toJSON();
     const len = data.objects.length;
     // remove cropper object
@@ -354,16 +423,15 @@ export default class LayerController {
 
     return new Promise((resolve, reject) => {
       this.tmpFCanvas.loadFromJSON(data, () => {
-    
-        let { left, top, width, height } = this.cropper.getCropperParam();    
-        if (this.cropped) {    
-          this.tmpFCanvas.forEachObject((obj) => {
+        let { left, top, width, height } = this.cropper.getCropperParam();
+        if (this.cropped) {
+          this.tmpFCanvas.forEachObject(obj => {
             const originLeft = obj.left;
             const originTop = obj.top;
             obj.set({
               left: originLeft - left,
               top: originTop - top,
-            })
+            });
           });
           this.tmpFCanvas.setDimensions({
             width: width,
@@ -387,64 +455,122 @@ export default class LayerController {
           });
 
           setTimeout(() => {
-
-            // if output is base64, the output size may be huge
-            // but if output is jpeg, the alpha of the total image will be losed
-            const base64 = this.tmpFCanvas.toDataURL({format: 'png', quality: 1});
-
-            console.log('size:', ((base64.length / 1024) / 1024) );
-
+            const base64 = this.tmpFCanvas.toDataURL({
+              format: this.options.outputFormat || 'png',
+              quality: this.options.outputQuality || 1,
+            });
             resolve({
               base64,
               width,
-              height
+              height,
             });
           }, 0);
         });
-
-      });   
-    }); 
+      });
+    });
   }
 
   syncIdocx() {
+    let changed = false;
     if (!this.imageDocx) {
-      return;
+      return changed;
     }
     const layers = this.getAllLayers();
-    this.imageDocx.syncCanvasObjects(layers);
-    this.imageDocx.syncRegion(this.cropper);
+    if (this.imageDocx.syncCanvasObjects(layers)) {
+      changed = true;
+    }
+    if (this.imageDocx.syncRegion(this.cropper)) {
+      changed = true;
+    }
+    return changed;
   }
 
-  @async('保存中...')
-  async toJSON() {
+  @async()
+  async saveIdocxToJSON() {
     if (!this.imageDocx) {
       return undefined;
     }
-    this.syncIdocx();
-    const img = await this.exportImage();
-    const json = await this.imageDocx.toJSON();
-    const item = {
-      ...json,
-      previewUrl: img.base64
+    const changed = this.syncIdocx();
+    let img: any = null;
+    console.log('changed', changed);
+    if (changed) {
+      img = await this.exportImage();
     }
-    return item;
+    const obj: any = this.imageDocx.toJSON();
+    if (img) {
+      obj.previewBase64 = img.base64;
+      obj.previewWidth = img.width;
+      obj.previewHeight = img.height;
+    }
+    return obj;
   }
 
   @async('保存中...')
   async saveCurrentIdocx() {
-    const { idocxUid, imageDocx } = this;  
+    const { idocxUid, imageDocx } = this;
+    if (!this.idocxList) {
+      return;
+    }
     const currentIndex = this.idocxList.list.findIndex(item => item.uid === idocxUid);
     if (!idocxUid || !imageDocx || currentIndex === -1) {
       return;
     }
-    const data = await this.toJSON();    
+    const data = await this.saveIdocxToJSON();
+
     this.idocxList.list[currentIndex] = {
       ...this.idocxList.list[currentIndex],
-      ...data
+      ...data,
     };
     this.cmp.forceUpdate();
     return objects.deepClone(this.idocxList.list[currentIndex]);
   }
 
-}
+  async deleteIdox(data) {
+    if (!data || !this.idocxList || this.idocxList.empty()) {
+      return;
+    }
+    const targetIndex = this.idocxList.list.findIndex(item => item.uid === data.uid);
 
+    if (this.idocxUid !== data.uid) {
+      this.idocxList.list.splice(targetIndex, 1);
+      this.update();
+      return;
+    }
+
+    // const prevMode = this.viewMode;
+    this.setViewMode(ViewMode.Normal);
+
+    this.fCanvas.clear();
+    this.imageDocx = undefined;
+    this.idocxList.list.splice(targetIndex, 1);
+    this.update();
+
+    // save current before load new
+  }
+
+  @async()
+  async outputIdocxList() {
+    if (!this.idocxList || this.idocxList.empty()) {
+      return [];
+    }
+    if (this.options.autoSave && this.imageDocx) {
+      await this.saveCurrentIdocx();
+      this.loading = true;
+      this.cmp.forceUpdate();
+    }
+    const output = objects.deepClone(this.idocxList.list) || [];
+    for (let i = 0; i < output.length; i++) {
+      const item: any = output[i];
+      const { previewBase64, layers } = item;
+      if (previewBase64) {
+        item.previewUrl = await this.util.base64ToUrl(previewBase64);
+        delete item.previewBase64;
+      }
+      delete item.uid;
+      console.log(item);
+      // remove all base64 in layers
+      layers.forEach(layer => delete layer.contentBase64);
+    }
+    return output;
+  }
+}
