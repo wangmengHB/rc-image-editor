@@ -1,8 +1,12 @@
 
-import MAIN_IMAGE_URL_1 from '../../assets/main.jpeg';
+import MAIN_IMAGE_URL_1 from '../../assets/main1.jpeg';
 import MAIN_IMAGE_URL_2 from '../../assets/main2.png';
+import MAIN_IMAGE_URL_3 from '../../assets/main3.jpg';
 import MAIN_IMAGE_URL_4 from '../../assets/main4.jpg';
-import TEST_LOGO_URL_1 from '../../assets/_logo3.png';
+import TEST_LOGO_URL_1 from '../../assets/logo_1001.png';
+import TEST_LOGO_URL_2 from '../../assets/logo_1002.png';
+import TEST_LOGO_URL_3 from '../../assets/logo_1003.png';
+import TEST_LOGO_URL_4 from '../../assets/logo_1004.png';
 
 
 const IDOCX_1 = {
@@ -17,19 +21,36 @@ const IDOCX_1 = {
       name: '',
     },
     {
-      contentUrl: TEST_LOGO_URL_1,
-      x: 300,
-      y: 200,
-      vWidth: 600,
+      contentUrl: TEST_LOGO_URL_2,
+      x: 200,
+      y: 120,
+      vWidth: 400,
       vHeight: 200,
       name: '',
     },
+    {
+      contentUrl: TEST_LOGO_URL_4,
+      x: 200,
+      y: 150,
+      vWidth: 400,
+      vHeight: 200,
+      name: '',
+    },
+    {
+      contentUrl: TEST_LOGO_URL_3,
+      x: 200,
+      y: 150,
+      vWidth: 400,
+      vHeight: 200,
+      name: '',
+    }, 
   ],
   region: {
     x: 100,
     y: 100,
-    vHeight: 800,
-    vWidth: 800,
+    vWidth: 900,
+    vHeight: 500,
+    
   }
 };
 
@@ -90,7 +111,7 @@ const IDOCX_4 = {
   }
 };
 
-export const IMAGE_DOCX_LIST = [IDOCX_4, IDOCX_1, IDOCX_2];
+export const IMAGE_DOCX_LIST = [IDOCX_1, IDOCX_2, IDOCX_4];
 
 
 
