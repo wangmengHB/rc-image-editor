@@ -1,6 +1,4 @@
-import { CANVAS_MAX_WIDTH, CANVAS_MAX_HEIGHT, ViewMode, CANVAS_PADDING } from '../const';
 import { fabric } from 'fabric';
-import { numbers, arrays } from 'util-kit';
 
 export default class Crop {
   fCanvas: any;

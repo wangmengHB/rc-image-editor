@@ -1,14 +1,12 @@
 import { fabric } from 'fabric';
 import {
-  CANVAS_MAX_WIDTH,
-  CANVAS_MAX_HEIGHT,
   ViewMode,
   CANVAS_PADDING,
   CANVAS_INIT_WIDTH,
   CANVAS_INIT_HEIGHT,
   PRECISION_SCENE_RATIO,
 } from '../const';
-import { objects, decorators } from 'util-kit';
+import { objects } from 'util-kit';
 import { defaultOptions } from '../config/default';
 import Cropper from './cropper';
 import ImageDocx from '../model/image-docx';
