@@ -13,6 +13,7 @@ import ImageDocx from '../model/image-docx';
 import IdocxJSONList from '../model/idocx-json-list';
 import { fakeUrlToBase64, fakeBase64ToUrl, async } from '../util';
 
+fabric.textureSize = 8192;
 fabric.enableGLFiltering = true;
 fabric.Object.prototype.transparentCorners = false;
 fabric.Object.prototype.padding = 2;
